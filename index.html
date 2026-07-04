@@ -6,7 +6,7 @@
 <title>Racha do Rolê</title>
 <meta name="theme-color" content="#fb6d51">
 <meta name="description" content="Divide a conta de qualquer rolê — churrasco, aniversário, viagem — e mostra quem paga quem, com PIX e QR Code.">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23e0533a'/><stop offset='1' stop-color='%23ff9e7b'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><circle cx='16' cy='9' r='2.4' fill='%23fff'/><rect x='7' y='14.6' width='18' height='2.8' rx='1.4' fill='%23fff'/><circle cx='16' cy='23' r='2.4' fill='%23fff'/></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23db2777'/><stop offset='1' stop-color='%23a855f7'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><circle cx='16' cy='9' r='2.4' fill='%23fff'/><rect x='7' y='14.6' width='18' height='2.8' rx='1.4' fill='%23fff'/><circle cx='16' cy='23' r='2.4' fill='%23fff'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,7 +30,14 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
   body{
-    background:var(--carvao);
+    background:
+      radial-gradient(circle at 12% 6%, rgba(255,140,92,.55), transparent 42%),
+      radial-gradient(circle at 88% 4%, rgba(255,96,128,.46), transparent 46%),
+      radial-gradient(circle at 84% 92%, rgba(129,102,255,.34), transparent 48%),
+      radial-gradient(circle at 6% 94%, rgba(255,190,70,.48), transparent 46%),
+      radial-gradient(circle at 50% 55%, rgba(45,200,165,.16), transparent 62%),
+      var(--carvao);
+    background-attachment:fixed;
     color:var(--creme);
     font-family:'Inter',system-ui,sans-serif;
     line-height:1.5;
@@ -54,10 +61,12 @@
     filter:drop-shadow(0 5px 12px rgba(224,83,58,.38))}
   .wm{margin:2px 0 2px;line-height:.84}
   .wm .l1{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
-    font-size:clamp(15px,4.6vw,20px);letter-spacing:.16em;text-transform:uppercase;color:var(--ember1)}
+    font-size:clamp(15px,4.6vw,20px);letter-spacing:.16em;text-transform:uppercase;color:#db2777}
   .wm .l2{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
-    font-size:clamp(56px,18vw,90px);letter-spacing:-.02em;text-transform:uppercase;color:var(--creme);
-    text-shadow:4px 5px 0 var(--ember2)}
+    font-size:clamp(56px,18vw,90px);letter-spacing:-.02em;text-transform:uppercase;color:#db2777;
+    text-shadow:4px 5px 0 #6d28d9}
+  body.dark .wm .l1{color:#f472b6}
+  body.dark .wm .l2{color:#f472b6;text-shadow:4px 5px 0 #a78bfa}
   .coals{
     height:5px;width:168px;margin:14px auto 16px;border-radius:4px;
     background:var(--ember);
@@ -135,6 +144,22 @@
   }
   body.dark section{box-shadow:none;border:1px solid var(--linha)}
   body.dark .theme-toggle{box-shadow:none}
+  body.dark{
+    background:
+      radial-gradient(circle at 12% 6%, rgba(255,110,70,.30), transparent 44%),
+      radial-gradient(circle at 88% 4%, rgba(255,80,120,.26), transparent 46%),
+      radial-gradient(circle at 84% 92%, rgba(140,90,255,.28), transparent 48%),
+      radial-gradient(circle at 6% 94%, rgba(240,170,60,.24), transparent 46%),
+      radial-gradient(circle at 50% 55%, rgba(40,190,155,.14), transparent 62%),
+      var(--carvao);
+  }
+
+  /* JOGO DE CORES: cada seção com sua cor */
+  section:nth-of-type(1) .ico{background:rgba(251,109,81,.15);color:#e0533a}
+  section:nth-of-type(2) .ico{background:rgba(231,154,52,.17);color:#c07d1f}
+  section:nth-of-type(3) .ico{background:rgba(31,157,106,.16);color:#148a5b}
+  section:nth-of-type(4) .ico{background:rgba(124,92,255,.16);color:#6b4be0}
+  section:nth-of-type(5) .ico{background:rgba(236,72,153,.15);color:#d1418a}
 
   /* PROGRESSO + MARCAR PAGO */
   .prog{margin:0 0 14px}
@@ -171,10 +196,13 @@
   /* GENERIC INPUTS */
   input,select{
     font-family:'Inter',sans-serif;font-size:15px;color:var(--creme);
-    background:var(--card2);border:1px solid var(--linha);border-radius:9px;
+    background:#fff;border:1px solid var(--linha);border-radius:9px;
     padding:10px 11px;width:100%;outline:none;transition:border-color .15s,box-shadow .15s;
   }
-  input::placeholder{color:#b3a99c}
+  body.dark input,body.dark select{background:#332a20}
+  body.dark .nome-churra{background:none}
+  input::placeholder{color:#c9846f}
+  body.dark input::placeholder{color:#c98a76}
   input:focus,select:focus{border-color:var(--ember2);box-shadow:0 0 0 3px rgba(251,109,81,.18)}
   select{appearance:none;-webkit-appearance:none;cursor:pointer;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238c8175' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
@@ -328,7 +356,7 @@
     <div class="grate"></div>
     <button id="btnTema" class="theme-toggle" aria-label="Alternar tema claro/escuro">🌙</button>
     <div class="hero-in">
-      <span class="emblem"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="em" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0533a"/><stop offset="1" stop-color="#ff9e7b"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#em)"/><circle cx="20" cy="12" r="3" fill="#fff"/><rect x="9" y="18.3" width="22" height="3.4" rx="1.7" fill="#fff"/><circle cx="20" cy="28" r="3" fill="#fff"/></svg></span>
+      <span class="emblem"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="em" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#db2777"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#em)"/><circle cx="20" cy="12" r="3" fill="#fff"/><rect x="9" y="18.3" width="22" height="3.4" rx="1.7" fill="#fff"/><circle cx="20" cy="28" r="3" fill="#fff"/></svg></span>
       <div class="eyebrow">Divide a conta do rolê</div>
       <h1 class="wm"><span class="l1">Racha do</span><span class="l2">Rolê</span></h1>
       <div class="coals"></div>
@@ -515,10 +543,10 @@ function renderPessoas(){
         <div>
           <label class="mini">Consumo</label>
           <select class="peso">
-            <option value="0.5">½ porção</option>
-            <option value="1">1 porção</option>
-            <option value="1.5">1½ porção</option>
-            <option value="2">2 porções</option>
+            <option value="0.5">½ parte</option>
+            <option value="1">1 parte</option>
+            <option value="1.5">1½ parte</option>
+            <option value="2">2 partes</option>
           </select>
         </div>
         <div>
