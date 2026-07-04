@@ -120,6 +120,37 @@
     padding:7px 15px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.1em;
     text-transform:uppercase;cursor:pointer}
 
+  /* MODO ESCURO */
+  .theme-toggle{position:absolute;top:14px;right:6px;z-index:2;width:38px;height:38px;border-radius:50%;
+    border:1px solid var(--linha);background:var(--card);color:var(--creme);font-size:16px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:.15s;box-shadow:0 2px 8px rgba(80,55,35,.08)}
+  .theme-toggle:hover{border-color:var(--ember2)}
+  .theme-toggle:active{transform:scale(.94)}
+  body.dark{
+    --carvao:#17130f; --card:#211b16; --card2:#2a2219; --linha:#3a2f26;
+    --creme:#f3e9dc; --fumaca:#a89a8b;
+    --ember1:#ff7a5c; --ember2:#ff8a68; --ember3:#ffb492;
+    --cerveja:#eab24a; --recebe:#37c98a; --paga:#ff7f97;
+    --ember:linear-gradient(90deg,#ff6a48,#ff8a68,#ffb492);
+  }
+  body.dark section{box-shadow:none;border:1px solid var(--linha)}
+  body.dark .theme-toggle{box-shadow:none}
+
+  /* PROGRESSO + MARCAR PAGO */
+  .prog{margin:0 0 14px}
+  .prog-top{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--fumaca);margin-bottom:7px;text-align:center}
+  .prog-bar{height:8px;border-radius:6px;background:var(--card2);overflow:hidden}
+  .prog-fill{height:100%;background:var(--ember);border-radius:6px;transition:width .4s cubic-bezier(.2,.7,.3,1)}
+  .chkpay{width:26px;height:26px;border-radius:50%;border:2px solid var(--linha);background:var(--card);
+    color:#fff;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;transition:.15s;line-height:1;padding:0}
+  .chkpay:hover{border-color:var(--recebe)}
+  .chkpay:active{transform:scale(.9)}
+  .pay.pago{opacity:.6}
+  .pay.pago .chkpay{background:var(--recebe);border-color:var(--recebe)}
+  .pay.pago .who,.pay.pago .val{text-decoration:line-through}
+
   /* SECTIONS */
   section{
     background:var(--card);border-radius:18px;
@@ -295,6 +326,7 @@
 
   <header class="hero">
     <div class="grate"></div>
+    <button id="btnTema" class="theme-toggle" aria-label="Alternar tema claro/escuro">🌙</button>
     <div class="hero-in">
       <span class="emblem"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="em" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0533a"/><stop offset="1" stop-color="#ff9e7b"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#em)"/><circle cx="20" cy="12" r="3" fill="#fff"/><rect x="9" y="18.3" width="22" height="3.4" rx="1.7" fill="#fff"/><circle cx="20" cy="28" r="3" fill="#fff"/></svg></span>
       <div class="eyebrow">Divide a conta do rolê</div>
@@ -661,11 +693,23 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
   });
 
   if(pagamentos.length){
+    const podeMarcar = !isConsol;
+    const pagosCount = podeMarcar ? pagamentos.filter(pg=>state.pagos && state.pagos[pagoKey(pg)]).length : 0;
     html += `<div class="divider"><span>Transferências</span></div>`;
+    if(podeMarcar){
+      const pct = Math.round(pagosCount/pagamentos.length*100);
+      const done = pagosCount===pagamentos.length;
+      html += `<div class="prog">
+        <div class="prog-top">${done ? '🎉 Tudo acertado!' : `${pagosCount} de ${pagamentos.length} acertados`}</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    }
     pagamentos.forEach((pg,idx)=>{
+      const pago = podeMarcar && state.pagos && state.pagos[pagoKey(pg)];
       const temPix = pg.paraPix && pg.paraPix.trim();
-      html += `<div class="pay" data-idx="${idx}">
+      html += `<div class="pay ${pago?'pago':''}" data-idx="${idx}">
         <div class="pay-line">
+          ${podeMarcar ? `<button class="chkpay" title="Marcar como pago">${pago?'✓':''}</button>` : ''}
           <span class="who">${escapeHtml(pg.deNome)}</span>
           <span class="arrow">paga →</span>
           <span class="who">${escapeHtml(pg.paraNome)}</span>
@@ -691,6 +735,18 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
 
   box.querySelectorAll('.pay').forEach(payEl=>{
     const pg = pagamentos[+payEl.dataset.idx];
+    const chk = payEl.querySelector('.chkpay');
+    if(chk){
+      chk.addEventListener('click', ()=>{
+        if(!state.pagos) state.pagos = {};
+        const k = pagoKey(pg);
+        const antesTodos = pagamentos.length>0 && pagamentos.every(p=>state.pagos[pagoKey(p)]);
+        if(state.pagos[k]) delete state.pagos[k]; else state.pagos[k] = true;
+        const agoraTodos = pagamentos.length>0 && pagamentos.every(p=>state.pagos[pagoKey(p)]);
+        autosave(); renderAcerto();
+        if(agoraTodos && !antesTodos){ confetti(); toast('Tudo acertado! 🎉'); }
+      });
+    }
     if(!pg.paraPix || !pg.paraPix.trim()) return;
     const payload = buildPix(pg.paraPix, pg.valor, pg.paraNome);
     const cp = payEl.querySelector('.copy-pix');
@@ -871,8 +927,57 @@ function nameColor(name){
 function initialOf(name){ const s=(name||'').trim(); return s ? s[0].toUpperCase() : '?'; }
 function avatarHtml(name){ return `<span class="av" style="background:${nameColor(name)}">${escapeHtml(initialOf(name))}</span>`; }
 function setAvatar(el,name){ if(!el) return; el.textContent=initialOf(name); el.style.background=nameColor(name); }
+
+/* chave de "pago" por transferência */
+function pagoKey(pg){ return pg.deNome + '→' + pg.paraNome; }
+
+/* modo escuro (preferência do aparelho) */
+function aplicarTema(dark){
+  document.body.classList.toggle('dark', !!dark);
+  const btn = document.getElementById('btnTema');
+  if(btn) btn.textContent = dark ? '☀️' : '🌙';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', dark ? '#17130f' : '#fb6d51');
+}
+document.getElementById('btnTema').addEventListener('click', ()=>{
+  const dark = !document.body.classList.contains('dark');
+  aplicarTema(dark);
+  store.set('racha:tema', dark ? 1 : 0);
+});
+
+/* confete de comemoração (sem biblioteca, funciona offline) */
+function confetti(){
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cv = document.createElement('canvas');
+  cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:80';
+  document.body.appendChild(cv);
+  const ctx = cv.getContext('2d');
+  const W = cv.width = innerWidth, H = cv.height = innerHeight;
+  const cores = ['#e0533a','#fb6d51','#ff9e7b','#1f9d6a','#e79a34','#ffffff'];
+  const parts = [];
+  for(let i=0;i<120;i++){
+    parts.push({ x:W/2+(Math.random()-.5)*W*0.4, y:H*0.28+(Math.random()-.5)*40,
+      vx:(Math.random()-.5)*9, vy:Math.random()*-9-3, g:0.22+Math.random()*0.1,
+      s:6+Math.random()*6, rot:Math.random()*6.28, vr:(Math.random()-.5)*0.32,
+      c:cores[i%cores.length] });
+  }
+  let t0 = null;
+  (function frame(ts){
+    if(!t0) t0 = ts;
+    const el = ts - t0;
+    ctx.clearRect(0,0,W,H);
+    parts.forEach(p=>{
+      p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; p.vx*=0.99;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.globalAlpha = Math.max(0, 1 - el/1900);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.s/2, -p.s/2, p.s, p.s*0.62);
+      ctx.restore();
+    });
+    if(el < 1900) requestAnimationFrame(frame); else cv.remove();
+  })(performance.now());
+}
 function recalc(){ renderAcerto(); renderConsolidaList(); updateConsolidaResult(); }
-function syncAll(){ document.getElementById('nomeChurra').value = state.nome; aplicarSimples(); renderGaleraImport(); renderPessoas(); renderGastos(); renderAcerto(); renderConsolidaList(); updateConsolidaResult(); autosave(); }
+function syncAll(){ if(!state.pagos) state.pagos={}; document.getElementById('nomeChurra').value = state.nome; aplicarSimples(); renderGaleraImport(); renderPessoas(); renderGastos(); renderAcerto(); renderConsolidaList(); updateConsolidaResult(); autosave(); }
 
 /* ---- modo simples ---- */
 function aplicarSimples(){
@@ -889,7 +994,7 @@ document.getElementById('btnSimples').addEventListener('click', ()=>{
 document.getElementById('btnNovo').addEventListener('click', ()=>{
   const temConteudo = state.pessoas.some(p=>p.nome) || state.gastos.some(g=>g.valor||g.desc);
   if(temConteudo && !confirm('Começar um rolê novo? O que está preenchido agora será limpo. (Seus rolês salvos continuam guardados.)')) return;
-  state = { nome:'Novo rolê', pessoas:[novaPessoa(), novaPessoa()], gastos:[novoGasto()], simples:state.simples };
+  state = { nome:'Novo rolê', pessoas:[novaPessoa(), novaPessoa()], gastos:[novoGasto()], simples:state.simples, pagos:{} };
   syncAll();
   toast('Rolê novo, do zero ✨');
 });
@@ -971,6 +1076,7 @@ document.getElementById('nomeChurra').addEventListener('input', e=>{ state.nome 
     }
   }
   syncAll();
+  aplicarTema(await store.get('racha:tema'));
   await refreshSaved();
   if(porLink){
     toast('Rolê aberto pelo link 🔗');
