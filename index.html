@@ -4,28 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Racha do Rolê</title>
-<meta name="theme-color" content="#4f46e5">
+<meta name="theme-color" content="#fb6d51">
 <meta name="description" content="Divide a conta de qualquer rolê — churrasco, aniversário, viagem — e mostra quem paga quem, com PIX e QR Code.">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%234f46e5'/><stop offset='1' stop-color='%23818cf8'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><circle cx='16' cy='9' r='2.4' fill='%23fff'/><rect x='7' y='14.6' width='18' height='2.8' rx='1.4' fill='%23fff'/><circle cx='16' cy='23' r='2.4' fill='%23fff'/></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23e0533a'/><stop offset='1' stop-color='%23ff9e7b'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><circle cx='16' cy='9' r='2.4' fill='%23fff'/><rect x='7' y='14.6' width='18' height='2.8' rx='1.4' fill='%23fff'/><circle cx='16' cy='23' r='2.4' fill='%23fff'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{
-    --carvao:#f6f7fb;
+    --carvao:#f8f4ee;
     --card:#ffffff;
-    --card2:#f1f3f9;
-    --linha:#e4e8f0;
-    --creme:#1b2330;
-    --fumaca:#767f92;
-    --ember1:#4f46e5;
-    --ember2:#6366f1;
-    --ember3:#818cf8;
-    --cerveja:#f59e0b;
-    --recebe:#16a34a;
-    --paga:#dc2626;
-    --ember:linear-gradient(90deg,#4f46e5,#6366f1,#818cf8);
+    --card2:#f4efe7;
+    --linha:#ece4d8;
+    --creme:#2b2620;
+    --fumaca:#8c8175;
+    --ember1:#e0533a;
+    --ember2:#fb6d51;
+    --ember3:#ff9e7b;
+    --cerveja:#e79a34;
+    --recebe:#1f9d6a;
+    --paga:#d6455e;
+    --ember:linear-gradient(90deg,#e0533a,#fb6d51,#ff9e7b);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
@@ -43,20 +43,21 @@
   .hero{position:relative;padding:44px 4px 28px;text-align:center;overflow:hidden}
   .grate{
     position:absolute;inset:0;z-index:0;opacity:.9;
-    background:radial-gradient(ellipse 70% 55% at 50% 8%,rgba(99,102,241,.13),transparent 70%);
+    background:radial-gradient(ellipse 70% 55% at 50% 8%,rgba(251,109,81,.13),transparent 70%);
   }
   .hero-in{position:relative;z-index:1}
   .eyebrow{
     font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;
     letter-spacing:.32em;text-transform:uppercase;color:var(--ember2);
   }
-  h1{
-    font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;
-    font-size:clamp(46px,15vw,74px);line-height:.92;letter-spacing:.01em;
-    text-transform:uppercase;margin:6px 0 4px;
-    background:var(--ember);-webkit-background-clip:text;background-clip:text;
-    color:transparent;
-  }
+  .emblem{display:inline-flex;width:46px;height:46px;transform:rotate(-6deg);margin-bottom:9px;
+    filter:drop-shadow(0 5px 12px rgba(224,83,58,.38))}
+  .wm{margin:2px 0 2px;line-height:.84}
+  .wm .l1{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
+    font-size:clamp(15px,4.6vw,20px);letter-spacing:.16em;text-transform:uppercase;color:var(--ember1)}
+  .wm .l2{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
+    font-size:clamp(56px,18vw,90px);letter-spacing:-.02em;text-transform:uppercase;color:var(--creme);
+    text-shadow:4px 5px 0 var(--ember2)}
   .coals{
     height:5px;width:168px;margin:14px auto 16px;border-radius:4px;
     background:var(--ember);
@@ -67,7 +68,7 @@
   /* AVATARES */
   .av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:inline-flex;
     align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;
-    font-family:'Inter',sans-serif;line-height:1;box-shadow:0 1px 3px rgba(20,25,40,.16)}
+    font-family:'Inter',sans-serif;line-height:1;box-shadow:0 1px 3px rgba(70,50,35,.18)}
   .p-av{width:34px;height:34px;font-size:14px;margin-right:2px}
   .bal-left{display:flex;align-items:center;min-width:0}
   .bal-left .av{margin-right:11px}
@@ -78,25 +79,62 @@
   .add:active,.btn:active,.save-btn:active,.share-all:active,.toggle:active,.cat:active,.sbtn:active{transform:scale(.97)}
   .bal,.pay{transition:background .15s}
   .total-card::after{content:"";position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(ellipse 60% 42% at 50% 0%,rgba(99,102,241,.10),transparent 70%);
+    background:radial-gradient(ellipse 60% 42% at 50% 0%,rgba(251,109,81,.10),transparent 70%);
     animation:sheen 4.6s ease-in-out infinite}
   @keyframes sheen{50%{opacity:.45}}
 
   /* ESTADO VAZIO */
   .empty .ic{display:block;font-size:30px;margin-bottom:8px;opacity:.9}
 
+  /* TOOLBAR / AÇÕES */
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:0 0 6px}
+  .tb{font-family:'Oswald',sans-serif;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+    padding:9px 14px;border-radius:22px;border:1px solid var(--linha);background:var(--card);
+    color:var(--creme);cursor:pointer;transition:.15s}
+  .tb:hover{border-color:var(--ember2)}
+  .tb:active{transform:scale(.97)}
+  .tb.on{background:rgba(251,109,81,.12);border-color:var(--ember2);color:var(--ember1)}
+
+  /* IMPORTAR GALERA */
+  .galimp{display:flex;gap:8px;margin-bottom:12px}
+  .galimp select{flex:1}
+  .galimp button{white-space:nowrap;padding:0 14px;border-radius:9px;border:1px solid var(--linha);
+    background:var(--card);color:var(--ember1);font-family:'Oswald',sans-serif;font-size:11px;
+    letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.15s}
+  .galimp button:hover{border-color:var(--ember2)}
+  .galimp button:active{transform:scale(.97)}
+
+  /* MODO SIMPLES: esconde consumo, bebida e categorias */
+  body.simple .grid3{grid-template-columns:1fr}
+  body.simple .grid3 > div:nth-child(1),
+  body.simple .grid3 > div:nth-child(2),
+  body.simple .cats{display:none}
+
+  /* DESFAZER */
+  .undobar{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+    background:#2b2620;color:#fff;border-radius:30px;padding:8px 10px 8px 18px;display:none;
+    align-items:center;gap:14px;box-shadow:0 8px 26px rgba(0,0,0,.28);z-index:55}
+  .undobar.show{display:flex;animation:enter .2s ease}
+  .undobar span{font-size:13.5px}
+  .undobar button{background:var(--ember);color:#fff;border:none;border-radius:20px;
+    padding:7px 15px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;cursor:pointer}
+
   /* SECTIONS */
   section{
-    background:var(--card);border:1px solid var(--linha);border-radius:16px;
-    padding:18px 16px;margin-top:16px;
+    background:var(--card);border-radius:18px;
+    padding:22px 18px;margin-top:20px;
+    box-shadow:0 1px 2px rgba(60,45,30,.04),0 8px 22px rgba(80,55,35,.07);
   }
-  .shead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .shead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
   .shead h2{
     font-family:'Oswald',sans-serif;font-weight:600;font-size:14px;
     letter-spacing:.18em;text-transform:uppercase;color:var(--creme);
-    display:flex;align-items:center;gap:9px;
+    display:flex;align-items:center;gap:10px;
   }
-  .shead h2::before{content:"";width:10px;height:10px;border-radius:2px;background:var(--ember);box-shadow:0 0 10px rgba(99,102,241,.5);transform:rotate(45deg)}
+  .ico{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+    border-radius:9px;background:rgba(251,109,81,.13);color:var(--ember1);flex-shrink:0}
+  .ico svg{width:16px;height:16px}
   .snum{font-family:'Oswald',sans-serif;color:var(--fumaca);font-size:12px;letter-spacing:.15em}
 
   /* GENERIC INPUTS */
@@ -105,10 +143,10 @@
     background:var(--card2);border:1px solid var(--linha);border-radius:9px;
     padding:10px 11px;width:100%;outline:none;transition:border-color .15s,box-shadow .15s;
   }
-  input::placeholder{color:#9aa3b2}
-  input:focus,select:focus{border-color:var(--ember2);box-shadow:0 0 0 3px rgba(99,102,241,.18)}
+  input::placeholder{color:#b3a99c}
+  input:focus,select:focus{border-color:var(--ember2);box-shadow:0 0 0 3px rgba(251,109,81,.18)}
   select{appearance:none;-webkit-appearance:none;cursor:pointer;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23767f92' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238c8175' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
     background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
   label.mini{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--fumaca);display:block;margin:0 0 4px 2px}
 
@@ -136,11 +174,11 @@
   .cat{flex:1;text-align:center;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.08em;
     text-transform:uppercase;padding:8px 4px;border-radius:8px;border:1px solid var(--linha);
     background:var(--card);color:var(--fumaca);cursor:pointer;transition:.15s}
-  .cat.on[data-c="comida"]{background:rgba(99,102,241,.12);border-color:var(--ember2);color:#4338ca}
-  .cat.on[data-c="bebida"]{background:rgba(245,158,11,.14);border-color:#f59e0b;color:#b45309}
-  .cat.on[data-c="outros"]{background:rgba(100,116,139,.12);border-color:#94a3b8;color:#475569}
+  .cat.on[data-c="comida"]{background:rgba(251,109,81,.13);border-color:var(--ember2);color:#b23a22}
+  .cat.on[data-c="bebida"]{background:rgba(231,154,52,.16);border-color:#e79a34;color:#a9651a}
+  .cat.on[data-c="outros"]{background:rgba(140,129,117,.14);border-color:#c1b6a6;color:#6b6155}
 
-  .del{background:none;border:none;color:#9aa3b2;cursor:pointer;font-size:20px;line-height:1;padding:4px 6px;transition:.15s;flex-shrink:0}
+  .del{background:none;border:none;color:#b3a99c;cursor:pointer;font-size:20px;line-height:1;padding:4px 6px;transition:.15s;flex-shrink:0}
   .del:hover{color:var(--paga)}
 
   .add{
@@ -149,15 +187,15 @@
     font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.12em;text-transform:uppercase;
     transition:.15s;
   }
-  .add:hover{border-color:var(--ember2);background:rgba(99,102,241,.07)}
+  .add:hover{border-color:var(--ember2);background:rgba(251,109,81,.07)}
 
   .empty{color:var(--fumaca);font-size:14px;text-align:center;padding:18px 8px;line-height:1.6}
 
   /* ACERTO */
   .total-card{
-    text-align:center;padding:22px 12px 20px;border-radius:14px;margin-bottom:16px;
-    background:radial-gradient(ellipse at 50% 140%,rgba(99,102,241,.13),transparent 70%),var(--card2);
-    border:1px solid var(--linha);position:relative;overflow:hidden;
+    text-align:center;padding:24px 12px 22px;border-radius:16px;margin-bottom:16px;
+    background:radial-gradient(ellipse at 50% 140%,rgba(251,109,81,.16),transparent 70%),var(--card2);
+    position:relative;overflow:hidden;
   }
   .total-card .lbl{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--fumaca)}
   .total-card .big{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(38px,11vw,54px);line-height:1;margin-top:6px;
@@ -215,7 +253,7 @@
   .consol-item{display:flex;align-items:center;gap:12px;padding:12px 13px;border:1px solid var(--linha);
     border-radius:11px;margin-bottom:8px;background:var(--card2);cursor:pointer;transition:.15s;user-select:none}
   .consol-item:hover{border-color:var(--ember2)}
-  .consol-item.sel{border-color:var(--ember2);background:rgba(99,102,241,.09)}
+  .consol-item.sel{border-color:var(--ember2);background:rgba(251,109,81,.09)}
   .consol-item .chk{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--linha);flex-shrink:0;
     display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#ffffff;transition:.15s}
   .consol-item.sel .chk{background:var(--ember);border-color:transparent}
@@ -258,8 +296,9 @@
   <header class="hero">
     <div class="grate"></div>
     <div class="hero-in">
+      <span class="emblem"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="em" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0533a"/><stop offset="1" stop-color="#ff9e7b"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#em)"/><circle cx="20" cy="12" r="3" fill="#fff"/><rect x="9" y="18.3" width="22" height="3.4" rx="1.7" fill="#fff"/><circle cx="20" cy="28" r="3" fill="#fff"/></svg></span>
       <div class="eyebrow">Divide a conta do rolê</div>
-      <h1>Racha<br>do Rolê</h1>
+      <h1 class="wm"><span class="l1">Racha do</span><span class="l2">Rolê</span></h1>
       <div class="coals"></div>
       <p class="tag">Cada um leva uma coisa. No fim, ninguém sai devendo pra ninguém.</p>
     </div>
@@ -267,12 +306,19 @@
 
   <input class="nome-churra" id="nomeChurra" placeholder="Nome do rolê" value="Rolê de sexta">
 
+  <div class="toolbar">
+    <button class="tb" id="btnSimples">⚖️ Modo simples</button>
+    <button class="tb" id="btnShare">🔗 Compartilhar link</button>
+    <button class="tb" id="btnNovo">✨ Novo rolê</button>
+  </div>
+
   <!-- GALERA -->
   <section>
     <div class="shead">
-      <h2>A Galera</h2>
+      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c0-3.3 2.7-5.5 5.5-5.5s5.5 2.2 5.5 5.5"/><path d="M16.5 5.5a3.2 3.2 0 0 1 0 6.2"/><path d="M17.5 14.8c2.4.5 4 2.4 4 5.2"/></svg></span>A Galera</h2>
       <span class="snum" id="cntPessoas">0 pessoas</span>
     </div>
+    <div id="galeraImport"></div>
     <div id="pessoas"></div>
     <button class="add" id="addPessoa">+ Adicionar pessoa</button>
   </section>
@@ -280,7 +326,7 @@
   <!-- COMPRAS -->
   <section>
     <div class="shead">
-      <h2>As Compras</h2>
+      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg></span>As Compras</h2>
       <span class="snum" id="cntGastos">0 itens</span>
     </div>
     <div id="gastos"></div>
@@ -290,7 +336,7 @@
   <!-- ACERTO -->
   <section>
     <div class="shead">
-      <h2>O Acerto</h2>
+      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h13"/><path d="M14 6l3 3-3 3"/><path d="M20 15H7"/><path d="M10 12l-3 3 3 3"/></svg></span>O Acerto</h2>
       <span class="snum">quem paga quem</span>
     </div>
     <div id="acerto"></div>
@@ -299,7 +345,7 @@
   <!-- SALVAR -->
   <section>
     <div class="shead">
-      <h2>Meus Rolês</h2>
+      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4.2L6 20V5a1 1 0 0 1 1-1z"/></svg></span>Meus Rolês</h2>
     </div>
     <div class="save-row">
       <input id="saveName" placeholder="Salvar este rolê como...">
@@ -311,13 +357,15 @@
   <!-- CONSOLIDADO -->
   <section>
     <div class="shead">
-      <h2>Consolidado</h2>
+      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4.5-9 4.5-9-4.5L12 3z"/><path d="M3 12.5l9 4.5 9-4.5"/></svg></span>Consolidado</h2>
       <span class="snum">vários rolês, um acerto só</span>
     </div>
     <p class="hint">Junte mais de um rolê (inclusive o que está em edição) e feche tudo numa conta só. As pessoas são somadas pelo nome — quem aparece em vários eventos entra uma vez só no acerto final.</p>
     <div id="consolidaList"></div>
     <div id="consolidaResult"></div>
   </section>
+
+  <div id="undoBar" class="undobar"><span id="undoTxt"></span><button id="undoBtn">Desfazer</button></div>
 
   <footer>Racha do Rolê · dividir sem estresse</footer>
 </div>
@@ -406,7 +454,7 @@ function buildPix(key, valor, nome){
 }
 
 /* ---------- estado ---------- */
-let state = { nome:'Rolê de sexta', pessoas:[], gastos:[] };
+let state = { nome:'Rolê de sexta', pessoas:[], gastos:[], simples:false };
 
 function novaPessoa(){ return { id:uid(), nome:'', peso:1, bebe:true, pix:'' }; }
 function novoGasto(){ return { id:uid(), pagador:'', desc:'', valor:'', cat:'comida' }; }
@@ -462,9 +510,16 @@ function renderPessoas(){
     el.querySelector('.pix-toggle').addEventListener('click', ()=>{ el.querySelector('.pix-box').classList.toggle('show'); });
     el.querySelector('.pix-key').addEventListener('input', e=>{ p.pix = e.target.value; recalc(); autosave(); });
     el.querySelector('.del').addEventListener('click', ()=>{
-      state.pessoas = state.pessoas.filter(x=>x.id!==p.id);
+      const idx = state.pessoas.indexOf(p);
+      const cleared = state.gastos.filter(g=>g.pagador===p.id).map(g=>g.id);
+      state.pessoas.splice(idx,1);
       state.gastos.forEach(g=>{ if(g.pagador===p.id) g.pagador=''; });
       renderPessoas(); renderGastos(); recalc(); autosave();
+      showUndo(`${p.nome||'Pessoa'} removida`, ()=>{
+        state.pessoas.splice(Math.min(idx,state.pessoas.length),0,p);
+        cleared.forEach(id=>{ const g=state.gastos.find(x=>x.id===id); if(g) g.pagador=p.id; });
+        renderPessoas(); renderGastos(); recalc(); autosave();
+      });
     });
     box.appendChild(el);
   });
@@ -515,8 +570,13 @@ function renderGastos(){
       c.addEventListener('click', ()=>{ g.cat=c.dataset.c; renderGastos(); recalc(); autosave(); });
     });
     el.querySelector('.del').addEventListener('click', ()=>{
-      state.gastos = state.gastos.filter(x=>x.id!==g.id);
+      const idx = state.gastos.indexOf(g);
+      state.gastos.splice(idx,1);
       renderGastos(); recalc(); autosave();
+      showUndo(`${g.desc||'Compra'} removida`, ()=>{
+        state.gastos.splice(Math.min(idx,state.gastos.length),0,g);
+        renderGastos(); recalc(); autosave();
+      });
     });
     box.appendChild(el);
   });
@@ -527,7 +587,7 @@ function renderGastos(){
 
 /* ========================= CÁLCULO ========================= */
 // parte justa e valor pago de cada pessoa, em UM rolê
-function computeShares(pessoas, gastos){
+function computeShares(pessoas, gastos, simples){
   const fair = {}; const paid = {};
   pessoas.forEach(p=>{ fair[p.id]=0; paid[p.id]=0; });
   let total = 0;
@@ -536,10 +596,10 @@ function computeShares(pessoas, gastos){
     if(v<=0) return;
     total += v;
     if(g.pagador && paid[g.pagador]!==undefined) paid[g.pagador]+=v;
-    // comida/geral: dividido por peso · bebida: igual entre quem bebe (por cabeça)
-    const ehBebida = g.cat==='bebida';
+    // modo simples: todos iguais · senão comida/geral por peso e bebida igual entre quem bebe
+    const ehBebida = !simples && g.cat==='bebida';
     const parts = ehBebida ? pessoas.filter(p=>p.bebe) : pessoas;
-    const pesoDe = p => ehBebida ? 1 : (p.peso||0);
+    const pesoDe = p => simples ? 1 : (ehBebida ? 1 : (p.peso||0));
     const somaPeso = parts.reduce((s,p)=>s + pesoDe(p), 0);
     if(somaPeso<=0) return;
     parts.forEach(p=>{ fair[p.id] += v * (pesoDe(p)/somaPeso); });
@@ -575,7 +635,7 @@ function settle(balances){
 }
 
 function calcular(){
-  const { rows, total } = computeShares(state.pessoas, state.gastos);
+  const { rows, total } = computeShares(state.pessoas, state.gastos, state.simples);
   const balances = buildBalances(rows);
   return { total, balances, pagamentos: settle(balances) };
 }
@@ -689,6 +749,7 @@ async function refreshSaved(){
   renderSaved();
   renderConsolidaList();
   updateConsolidaResult();
+  renderGaleraImport();
 }
 
 function renderSaved(){
@@ -733,10 +794,10 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
 
 // rolês disponíveis pra consolidar: o atual (em edição) + os salvos
 function consolidaItems(){
-  const items = [{ id:'__current', cur:true, nome:(state.nome||'Rolê atual'), pessoas:state.pessoas, gastos:state.gastos }];
+  const items = [{ id:'__current', cur:true, nome:(state.nome||'Rolê atual'), pessoas:state.pessoas, gastos:state.gastos, simples:state.simples }];
   Object.keys(savedCache).sort((a,b)=> savedCache[b].savedAt - savedCache[a].savedAt).forEach(id=>{
     const s = savedCache[id];
-    items.push({ id, cur:false, nome:s.state.nome||'Rolê', pessoas:s.state.pessoas, gastos:s.state.gastos });
+    items.push({ id, cur:false, nome:s.state.nome||'Rolê', pessoas:s.state.pessoas, gastos:s.state.gastos, simples:s.state.simples });
   });
   return items;
 }
@@ -744,7 +805,7 @@ function consolidaItems(){
 function renderConsolidaList(){
   const box = document.getElementById('consolidaList');
   box.innerHTML = consolidaItems().map(it=>{
-    const { total } = computeShares(it.pessoas, it.gastos);
+    const { total } = computeShares(it.pessoas, it.gastos, it.simples);
     const sel = selectedConsolida.has(it.id);
     return `<div class="consol-item ${sel?'sel':''} ${it.cur?'cur':''}" data-id="${it.id}">
       <div class="chk">${sel?'✓':''}</div>
@@ -773,7 +834,7 @@ function updateConsolidaResult(){
   const map = new Map();
   let total = 0;
   items.forEach(it=>{
-    const { rows, total:t } = computeShares(it.pessoas, it.gastos);
+    const { rows, total:t } = computeShares(it.pessoas, it.gastos, it.simples);
     total += t;
     rows.forEach(r=>{
       const nm = (r.nome||'').trim();
@@ -811,7 +872,85 @@ function initialOf(name){ const s=(name||'').trim(); return s ? s[0].toUpperCase
 function avatarHtml(name){ return `<span class="av" style="background:${nameColor(name)}">${escapeHtml(initialOf(name))}</span>`; }
 function setAvatar(el,name){ if(!el) return; el.textContent=initialOf(name); el.style.background=nameColor(name); }
 function recalc(){ renderAcerto(); renderConsolidaList(); updateConsolidaResult(); }
-function syncAll(){ document.getElementById('nomeChurra').value = state.nome; renderPessoas(); renderGastos(); renderAcerto(); renderConsolidaList(); updateConsolidaResult(); autosave(); }
+function syncAll(){ document.getElementById('nomeChurra').value = state.nome; aplicarSimples(); renderGaleraImport(); renderPessoas(); renderGastos(); renderAcerto(); renderConsolidaList(); updateConsolidaResult(); autosave(); }
+
+/* ---- modo simples ---- */
+function aplicarSimples(){
+  document.body.classList.toggle('simple', !!state.simples);
+  document.getElementById('btnSimples').classList.toggle('on', !!state.simples);
+}
+document.getElementById('btnSimples').addEventListener('click', ()=>{
+  state.simples = !state.simples;
+  aplicarSimples(); renderPessoas(); recalc(); autosave();
+  toast(state.simples ? 'Modo simples: todos iguais ⚖️' : 'Modo detalhado (peso e bebida)');
+});
+
+/* ---- novo rolê ---- */
+document.getElementById('btnNovo').addEventListener('click', ()=>{
+  const temConteudo = state.pessoas.some(p=>p.nome) || state.gastos.some(g=>g.valor||g.desc);
+  if(temConteudo && !confirm('Começar um rolê novo? O que está preenchido agora será limpo. (Seus rolês salvos continuam guardados.)')) return;
+  state = { nome:'Novo rolê', pessoas:[novaPessoa(), novaPessoa()], gastos:[novoGasto()], simples:state.simples };
+  syncAll();
+  toast('Rolê novo, do zero ✨');
+});
+
+/* ---- desfazer exclusão ---- */
+let undoTimer;
+function showUndo(text, restoreFn){
+  const bar = document.getElementById('undoBar');
+  document.getElementById('undoTxt').textContent = text;
+  bar.classList.add('show');
+  document.getElementById('undoBtn').onclick = ()=>{ restoreFn(); bar.classList.remove('show'); clearTimeout(undoTimer); };
+  clearTimeout(undoTimer);
+  undoTimer = setTimeout(()=>bar.classList.remove('show'), 6000);
+}
+
+/* ---- importar galera de um rolê salvo ---- */
+function renderGaleraImport(){
+  const box = document.getElementById('galeraImport');
+  const ids = Object.keys(savedCache).sort((a,b)=> savedCache[b].savedAt - savedCache[a].savedAt);
+  if(ids.length===0){ box.innerHTML=''; return; }
+  box.innerHTML = `<div class="galimp">
+    <select id="galSel">${ids.map(id=>`<option value="${id}">${escapeHtml(savedCache[id].state.nome||'Rolê')} (${savedCache[id].state.pessoas.length}p)</option>`).join('')}</select>
+    <button id="galBtn">↻ Trazer galera</button>
+  </div>`;
+  document.getElementById('galBtn').addEventListener('click', ()=>importarGalera(document.getElementById('galSel').value));
+}
+function importarGalera(id){
+  const src = savedCache[id]; if(!src) return;
+  const temNomes = state.pessoas.some(p=>p.nome);
+  if(temNomes && !confirm('Substituir a galera atual pela desse rolê?')) return;
+  state.pessoas = src.state.pessoas.map(p=>({ id:uid(), nome:p.nome||'', peso:p.peso??1, bebe:p.bebe!==false, pix:p.pix||'' }));
+  const ids = new Set(state.pessoas.map(p=>p.id));
+  state.gastos.forEach(g=>{ if(!ids.has(g.pagador)) g.pagador=''; });
+  renderPessoas(); renderGastos(); recalc(); autosave();
+  toast('Galera importada 👥');
+}
+
+/* ---- compartilhar o rolê pelo link ---- */
+const CAT = ['comida','bebida','outros'];
+function serialize(st){
+  const idx = new Map(st.pessoas.map((p,i)=>[p.id,i]));
+  const o = { n:st.nome, s:st.simples?1:0,
+    p: st.pessoas.map(p=>[p.nome||'', p.peso, p.bebe?1:0, p.pix||'']),
+    g: st.gastos.map(g=>[ (g.pagador!==''&&idx.has(g.pagador))?idx.get(g.pagador):-1, g.desc||'', g.valor||'', Math.max(0,CAT.indexOf(g.cat)) ]) };
+  return btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+}
+function deserialize(str){
+  const o = JSON.parse(decodeURIComponent(escape(atob(str))));
+  const pessoas = (o.p||[]).map(a=>({ id:uid(), nome:a[0]||'', peso:a[1]||1, bebe:a[2]?true:false, pix:a[3]||'' }));
+  const gastos = (o.g||[]).map(a=>({ id:uid(), pagador:(a[0]>=0&&pessoas[a[0]])?pessoas[a[0]].id:'', desc:a[1]||'', valor:a[2]||'', cat:CAT[a[3]]||'comida' }));
+  return { nome:o.n||'Rolê compartilhado', pessoas, gastos, simples:o.s?true:false };
+}
+function linkDoRole(){ return location.origin + location.pathname + '#r=' + serialize(state); }
+document.getElementById('btnShare').addEventListener('click', async ()=>{
+  const link = linkDoRole();
+  if(navigator.share){
+    try{ await navigator.share({ title:'Racha do Rolê', text:`Rateio do ${state.nome} — abre já preenchido:`, url:link }); return; }catch(e){}
+  }
+  copyText(link);
+  toast('Link copiado! Cola no zap 🔗');
+});
 
 document.getElementById('addPessoa').addEventListener('click', ()=>{ const np=novaPessoa(); state.pessoas.push(np); newlyAdded=np.id; renderPessoas(); renderGastos(); recalc(); autosave(); });
 document.getElementById('addGasto').addEventListener('click', ()=>{ const ng=novoGasto(); state.gastos.push(ng); newlyAdded=ng.id; renderGastos(); recalc(); autosave(); });
@@ -819,14 +958,24 @@ document.getElementById('nomeChurra').addEventListener('input', e=>{ state.nome 
 
 /* ---------- boot ---------- */
 (async function init(){
-  const working = await store.get('racha:working');
-  if(working && working.pessoas){ state = working; }
-  else {
-    state.pessoas = [ {...novaPessoa(), nome:''}, {...novaPessoa(), nome:''} ];
-    state.gastos = [ novoGasto() ];
+  let porLink = false;
+  if(location.hash.startsWith('#r=')){
+    try{ state = deserialize(location.hash.slice(3)); porLink = true; }catch(e){}
+  }
+  if(!porLink){
+    const working = await store.get('racha:working');
+    if(working && working.pessoas){ state = working; if(state.simples===undefined) state.simples=false; }
+    else {
+      state.pessoas = [ {...novaPessoa(), nome:''}, {...novaPessoa(), nome:''} ];
+      state.gastos = [ novoGasto() ];
+    }
   }
   syncAll();
   await refreshSaved();
+  if(porLink){
+    toast('Rolê aberto pelo link 🔗');
+    history.replaceState(null, '', location.pathname + location.search);
+  }
 })();
 </script>
 </body>
