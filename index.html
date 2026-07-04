@@ -217,6 +217,8 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   body.dark .nome-churra{background:none}
   input::placeholder{color:#c9846f}
   body.dark input::placeholder{color:#c98a76}
+  .up{text-transform:uppercase}
+  .up::placeholder{text-transform:none}
   input:focus,select:focus{border-color:var(--ember2);box-shadow:0 0 0 3px rgba(251,109,81,.18)}
   select{appearance:none;-webkit-appearance:none;cursor:pointer;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238c8175' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
@@ -400,7 +402,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
   <label class="nome-wrap" for="nomeChurra">
     <span class="nome-ic">✏️</span>
-    <input class="nome-churra" id="nomeChurra" placeholder="Nome do rolê" value="Rolê de sexta">
+    <input class="nome-churra up" id="nomeChurra" placeholder="Nome do rolê" value="ROLÊ DE SEXTA">
   </label>
 
   <div class="toolbar">
@@ -446,7 +448,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
       <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4.2L6 20V5a1 1 0 0 1 1-1z"/></svg></span>Meus Rolês</h2>
     </div>
     <div class="save-row">
-      <input id="saveName" placeholder="Salvar este rolê como...">
+      <input id="saveName" class="up" placeholder="Salvar este rolê como...">
       <button class="save-btn" id="saveBtn">Salvar</button>
     </div>
     <div id="savedList"></div>
@@ -570,7 +572,7 @@ function buildPix(key, valor, nome){
 }
 
 /* ---------- estado ---------- */
-let state = { nome:'Rolê de sexta', pessoas:[], gastos:[], simples:false };
+let state = { nome:'ROLÊ DE SEXTA', pessoas:[], gastos:[], simples:false };
 
 function novaPessoa(){ return { id:uid(), nome:'', peso:1, bebe:true, pix:'' }; }
 function novoGasto(){ return { id:uid(), pagador:'', desc:'', valor:'', cat:'comida' }; }
@@ -592,7 +594,7 @@ function renderPessoas(){
     el.innerHTML = `
       <div class="p-top">
         <span class="av p-av"></span>
-        <input class="nm" placeholder="Nome" value="${escapeHtml(p.nome)}">
+        <input class="nm up" placeholder="Nome" value="${escapeHtml(p.nome)}">
         <button class="del" title="Remover">×</button>
       </div>
       <div class="grid3">
@@ -620,7 +622,7 @@ function renderPessoas(){
 
     el.querySelector('.peso').value = String(p.peso);
     const pav = el.querySelector('.p-av'); setAvatar(pav, p.nome);
-    el.querySelector('.nm').addEventListener('input', e=>{ p.nome = e.target.value; setAvatar(pav, p.nome); recalc(); renderGastos(); autosave(); });
+    el.querySelector('.nm').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); p.nome = e.target.value; setAvatar(pav, p.nome); recalc(); renderGastos(); autosave(); });
     el.querySelector('.peso').addEventListener('change', e=>{ p.peso = parseFloat(e.target.value); recalc(); autosave(); });
     el.querySelector('.bebe').addEventListener('click', ()=>{ p.bebe = !p.bebe; renderPessoas(); recalc(); autosave(); });
     el.querySelector('.pix-toggle').addEventListener('click', ()=>{ el.querySelector('.pix-box').classList.toggle('show'); });
@@ -659,7 +661,7 @@ function renderGastos(){
     el.className = 'gasto' + (g.id===newlyAdded ? ' enter' : '');
     el.innerHTML = `
       <div class="g-r1">
-        <input class="desc" placeholder="O que foi (ex: picanha, cerveja)" value="${escapeHtml(g.desc)}">
+        <input class="desc up" placeholder="O que foi (ex: picanha, cerveja)" value="${escapeHtml(g.desc)}">
         <button class="del" title="Remover" style="justify-self:end">×</button>
       </div>
       <div class="g-r2">
@@ -679,7 +681,7 @@ function renderGastos(){
       </div>`;
 
     el.querySelector('.pagador').value = g.pagador;
-    el.querySelector('.desc').addEventListener('input', e=>{ g.desc=e.target.value; autosave(); });
+    el.querySelector('.desc').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); g.desc=e.target.value; autosave(); });
     el.querySelector('.pagador').addEventListener('change', e=>{ g.pagador=e.target.value; recalc(); autosave(); });
     el.querySelector('.valor').addEventListener('input', e=>{ g.valor=e.target.value; recalc(); autosave(); });
     el.querySelectorAll('.cat').forEach(c=>{
@@ -942,7 +944,7 @@ async function salvarRole(){
 document.getElementById('btnSalvarTop').addEventListener('click', salvarRole);
 document.getElementById('saveBtn').addEventListener('click', ()=>{
   const nameInput = document.getElementById('saveName');
-  if(nameInput.value.trim()){ state.nome = nameInput.value.trim(); document.getElementById('nomeChurra').value = state.nome; }
+  if(nameInput.value.trim()){ state.nome = nameInput.value.trim().toUpperCase(); document.getElementById('nomeChurra').value = state.nome; }
   nameInput.value = '';
   salvarRole();
 });
@@ -1162,7 +1164,7 @@ document.getElementById('btnSimples').addEventListener('click', ()=>{
 document.getElementById('btnNovo').addEventListener('click', ()=>{
   const temConteudo = state.pessoas.some(p=>p.nome) || state.gastos.some(g=>g.valor||g.desc);
   if(temConteudo && !confirm('Começar um rolê novo? O que está preenchido agora será limpo. (Seus rolês salvos continuam guardados.)')) return;
-  state = { nome:'Novo rolê', pessoas:[novaPessoa(), novaPessoa()], gastos:[novoGasto()], simples:state.simples, pagos:{} };
+  state = { nome:'NOVO ROLÊ', pessoas:[novaPessoa(), novaPessoa()], gastos:[novoGasto()], simples:state.simples, pagos:{} };
   syncAll();
   toast('Rolê novo, do zero ✨');
 });
@@ -1242,7 +1244,7 @@ document.getElementById('shareOverlay').addEventListener('click', e=>{ if(e.targ
 
 document.getElementById('addPessoa').addEventListener('click', ()=>{ const np=novaPessoa(); state.pessoas.push(np); newlyAdded=np.id; renderPessoas(); renderGastos(); recalc(); autosave(); });
 document.getElementById('addGasto').addEventListener('click', ()=>{ const ng=novoGasto(); state.gastos.push(ng); newlyAdded=ng.id; renderGastos(); recalc(); autosave(); });
-document.getElementById('nomeChurra').addEventListener('input', e=>{ state.nome = e.target.value; autosave(); });
+document.getElementById('nomeChurra').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); state.nome = e.target.value; autosave(); });
 
 /* ---------- boot ---------- */
 (async function init(){
