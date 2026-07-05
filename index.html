@@ -107,6 +107,27 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .tb.on{background:rgba(251,109,81,.12);border-color:var(--ember2);color:var(--ember1)}
   .tb-save{background:var(--ember);color:#fff;border-color:transparent;font-weight:700}
   .tb-save:hover{filter:brightness(1.06);border-color:transparent}
+  .salvar-fim{display:block;width:100%;margin:18px 0 0;padding:16px;border-radius:14px;border:none;cursor:pointer;
+    background:var(--ember);color:#fff;font-family:'Oswald',sans-serif;font-weight:700;font-size:15px;
+    letter-spacing:.1em;text-transform:uppercase;box-shadow:0 6px 18px rgba(224,83,58,.28);transition:.15s}
+  .salvar-fim:hover{filter:brightness(1.05)}
+  .salvar-fim:active{transform:scale(.98)}
+
+  /* TELA DE PAGAMENTO (aberta pelo link) */
+  #pagarView{display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px 16px}
+  #pagarView.show{display:flex}
+  .pagar-card{background:var(--card);border-radius:22px;padding:28px 22px;max-width:380px;width:100%;
+    text-align:center;box-shadow:0 12px 34px rgba(80,55,35,.14)}
+  .pagar-emblem{width:46px;height:46px;display:inline-flex}
+  .pagar-card h2{font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--ember1);margin:10px 0 2px}
+  .pagar-para{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;color:var(--creme);margin-top:2px}
+  .pagar-valor{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:36px;line-height:1.1;margin:2px 0 18px;
+    background:var(--ember);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .pagar-qr{background:#fff;padding:12px;border-radius:14px;display:inline-block;line-height:0;margin-bottom:16px}
+  .pagar-hint{color:var(--fumaca);font-size:13px;line-height:1.55;margin-top:14px}
+  .pagar-voltar{display:inline-block;margin-top:16px;color:var(--fumaca);font-size:11px;text-decoration:none;
+    font-family:'Oswald',sans-serif;letter-spacing:.1em;text-transform:uppercase}
+  .pagar-voltar:hover{color:var(--ember1)}
 
   /* CONSOLIDADO RECOLHÍVEL */
   .consol-head{cursor:pointer;user-select:none;margin-bottom:0}
@@ -442,6 +463,8 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     <div id="acerto"></div>
   </section>
 
+  <button class="salvar-fim" id="btnSalvarFim">💾 Salvar em Meus Rolês</button>
+
   <!-- SALVAR -->
   <section>
     <div class="shead">
@@ -500,6 +523,20 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div id="pagarView">
+  <div class="pagar-card">
+    <span class="pagar-emblem"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="emp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#db2777"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#emp)"/><circle cx="20" cy="12" r="3" fill="#fff"/><rect x="9" y="18.3" width="22" height="3.4" rx="1.7" fill="#fff"/><circle cx="20" cy="28" r="3" fill="#fff"/></svg></span>
+    <h2>Pagamento PIX</h2>
+    <div class="pagar-para" id="pagarPara"></div>
+    <div class="pagar-valor" id="pagarValor"></div>
+    <div id="pagarQr" class="pagar-qr"></div>
+    <input id="pagarCodigo" class="sharelink" readonly>
+    <button class="salvar-fim" id="pagarCopiar" style="margin-top:4px">📋 Copiar código PIX</button>
+    <p class="pagar-hint">Cola esse código no app do seu banco, na opção <b>"PIX Copia e Cola"</b> — ou aponta a câmera pro QR Code acima.</p>
+    <a href="#" id="pagarVoltar" class="pagar-voltar">Abrir o Racha do Rolê</a>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -617,7 +654,7 @@ function renderPessoas(){
         </div>
       </div>
       <div class="pix-box ${p.pix?'show':''}">
-        <input class="pix-key" style="grid-column:1/-1" placeholder="CPF, e-mail, telefone ou chave aleatória" value="${escapeHtml(p.pix)}">
+        <input class="pix-key" style="grid-column:1/-1" placeholder="CPF, e-mail, telefone com +55, ou chave aleatória" value="${escapeHtml(p.pix)}">
       </div>`;
 
     el.querySelector('.peso').value = String(p.peso);
@@ -841,7 +878,8 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
     if(qr) qr.addEventListener('click', ()=>openQR(pg, payload));
     const wp = payEl.querySelector('.send-wpp');
     if(wp) wp.addEventListener('click', ()=>{
-      const msg = `Oi ${pg.deNome}!\nDo rolê "${ctxNome}", ficou ${fmt(pg.valor)} pra você.\n\nCopia o código PIX abaixo e cola no app do seu banco:\n\n${payload}`;
+      const link = linkPagamento(pg, payload);
+      const msg = `Oi ${pg.deNome}!\nDo rolê "${ctxNome}", ficou ${fmt(pg.valor)} pra você.\n\nToca no link, copia o PIX e cola no seu banco:\n${link}`;
       window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
     });
   });
@@ -942,6 +980,7 @@ async function salvarRole(){
   toast(atualizou ? 'Rolê atualizado ✅' : 'Rolê salvo em Meus Rolês ✅');
 }
 document.getElementById('btnSalvarTop').addEventListener('click', salvarRole);
+document.getElementById('btnSalvarFim').addEventListener('click', salvarRole);
 document.getElementById('saveBtn').addEventListener('click', ()=>{
   const nameInput = document.getElementById('saveName');
   if(nameInput.value.trim()){ state.nome = nameInput.value.trim().toUpperCase(); document.getElementById('nomeChurra').value = state.nome; }
@@ -1221,6 +1260,28 @@ function deserialize(str){
   return { nome:o.n||'Rolê compartilhado', pessoas, gastos, simples:o.s?true:false };
 }
 function linkDoRole(){ return location.origin + location.pathname + '#r=' + serialize(state); }
+function linkPagamento(pg, payload){
+  const o = { c:payload, v:fmt(pg.valor), p:pg.paraNome };
+  return location.origin + location.pathname + '#pagar=' + b64urlEnc(JSON.stringify(o));
+}
+function abrirViewPagamento(str){
+  let o; try{ o = JSON.parse(b64urlDec(str)); }catch(e){ return false; }
+  if(!o || !o.c) return false;
+  document.getElementById('pagarPara').textContent = 'Pra ' + (o.p || '');
+  document.getElementById('pagarValor').textContent = o.v || '';
+  document.getElementById('pagarCodigo').value = o.c;
+  const qb = document.getElementById('pagarQr');
+  qb.innerHTML = '';
+  try{ new QRCode(qb, { text:o.c, width:180, height:180, colorDark:'#17130f', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.M }); }
+  catch(e){ qb.style.display = 'none'; }
+  document.getElementById('pagarCopiar').addEventListener('click', ()=>{
+    const i = document.getElementById('pagarCodigo'); i.focus(); i.select(); copyText(o.c);
+  });
+  document.getElementById('pagarVoltar').addEventListener('click', e=>{ e.preventDefault(); location.href = location.pathname; });
+  document.querySelector('.wrap').style.display = 'none';
+  document.getElementById('pagarView').classList.add('show');
+  return true;
+}
 function mensagemZap(link){ return `Racha do Rolê - ${state.nome}\n\nBora fechar a conta! Toca no link que já abre com tudo preenchido:\n\n${link}`; }
 
 document.getElementById('btnShare').addEventListener('click', ()=>{
@@ -1248,6 +1309,10 @@ document.getElementById('nomeChurra').addEventListener('input', e=>{ const pos=e
 
 /* ---------- boot ---------- */
 (async function init(){
+  // link de pagamento (aberto por quem vai pagar)
+  if(location.hash.startsWith('#pagar=')){
+    if(abrirViewPagamento(location.hash.slice(7))) return;
+  }
   let porLink = false;
   if(location.hash.startsWith('#r=')){
     try{ state = deserialize(location.hash.slice(3)); porLink = true; }catch(e){}
