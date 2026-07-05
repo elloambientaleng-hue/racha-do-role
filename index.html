@@ -598,8 +598,35 @@ const emv = (id,val) => id + String(val.length).padStart(2,'0') + val;
 function pixText(s,max){
   return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9 ]/g,'').toUpperCase().trim().slice(0,max);
 }
+// valida CPF pelos dígitos verificadores (pra não confundir com telefone)
+function cpfValido(cpf){
+  cpf = (cpf||'').replace(/\D/g,'');
+  if(cpf.length!==11 || /^(\d)\1{10}$/.test(cpf)) return false;
+  let s=0; for(let i=0;i<9;i++) s+=parseInt(cpf[i])*(10-i);
+  let r=(s*10)%11; if(r===10) r=0; if(r!==parseInt(cpf[9])) return false;
+  s=0; for(let i=0;i<10;i++) s+=parseInt(cpf[i])*(11-i);
+  r=(s*10)%11; if(r===10) r=0; if(r!==parseInt(cpf[10])) return false;
+  return true;
+}
+// coloca +55 automaticamente quando a chave é telefone e veio sem código do país
+function normalizarPix(key){
+  const k = (key||'').trim();
+  if(!k) return k;
+  if(k.includes('@')) return k;              // e-mail
+  if(k.startsWith('+')) return k;            // já tem código internacional
+  if(/[a-zA-Z]/.test(k)) return k;           // chave aleatória (tem letras)
+  const d = k.replace(/\D/g,'');             // só os dígitos
+  if(d.length===11){
+    if(cpfValido(d)) return k;               // é CPF válido → não mexe
+    if(d[2]==='9') return '+55'+d;           // padrão de celular (DDD + 9...) → +55
+    return k;
+  }
+  if(d.length===10 && d[2]==='9') return '+55'+d;   // celular formato antigo
+  if((d.length===12 || d.length===13) && d.startsWith('55')) return '+'+d; // veio "55DDD..." sem +
+  return k;                                   // CNPJ(14), CPF, etc → deixa como está
+}
 function buildPix(key, valor, nome){
-  key = (key||'').trim();
+  key = normalizarPix((key||'').trim());
   const mai = emv('26', emv('00','br.gov.bcb.pix') + emv('01', key));
   let p = emv('00','01') + mai + emv('52','0000') + emv('53','986');
   if(valor && valor > 0) p += emv('54', valor.toFixed(2));
@@ -663,7 +690,9 @@ function renderPessoas(){
     el.querySelector('.peso').addEventListener('change', e=>{ p.peso = parseFloat(e.target.value); recalc(); autosave(); });
     el.querySelector('.bebe').addEventListener('click', ()=>{ p.bebe = !p.bebe; renderPessoas(); recalc(); autosave(); });
     el.querySelector('.pix-toggle').addEventListener('click', ()=>{ el.querySelector('.pix-box').classList.toggle('show'); });
-    el.querySelector('.pix-key').addEventListener('input', e=>{ p.pix = e.target.value; recalc(); autosave(); });
+    const pixEl = el.querySelector('.pix-key');
+    pixEl.addEventListener('input', e=>{ p.pix = e.target.value; recalc(); autosave(); });
+    pixEl.addEventListener('blur', ()=>{ const n = normalizarPix(p.pix); if(n !== p.pix){ p.pix = n; pixEl.value = n; recalc(); autosave(); toast('Coloquei o +55 no telefone'); } });
     el.querySelector('.del').addEventListener('click', ()=>{
       const idx = state.pessoas.indexOf(p);
       const cleared = state.gastos.filter(g=>g.pagador===p.id).map(g=>g.id);
