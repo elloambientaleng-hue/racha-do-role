@@ -509,6 +509,19 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     </div>
   </section>
 
+  <!-- CONSOLIDADO -->
+  <section>
+    <div class="shead consol-head" id="consolHead">
+      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4.5-9 4.5-9-4.5L12 3z"/><path d="M3 12.5l9 4.5 9-4.5"/></svg></span>Consolidado</h2>
+      <span class="consol-right"><span class="consol-meta" id="consolMeta"></span><span class="chev" id="consolChev">▸</span></span>
+    </div>
+    <div id="consolidaBody" class="collapsed">
+      <p class="hint">Junte mais de um rolê (inclusive o que está em edição) e feche tudo numa conta só. As pessoas são somadas pelo nome — quem aparece em vários eventos entra uma vez só no acerto final.</p>
+      <div id="consolidaList"></div>
+      <div id="consolidaResult"></div>
+    </div>
+  </section>
+
   <!-- CONTATOS -->
   <section>
     <div class="shead consol-head" id="contatosHead">
@@ -523,19 +536,6 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         <input id="novoContatoPix" placeholder="Chave PIX">
         <button id="addContato">+ Add</button>
       </div>
-    </div>
-  </section>
-
-  <!-- CONSOLIDADO -->
-  <section>
-    <div class="shead consol-head" id="consolHead">
-      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4.5-9 4.5-9-4.5L12 3z"/><path d="M3 12.5l9 4.5 9-4.5"/></svg></span>Consolidado</h2>
-      <span class="consol-right"><span class="consol-meta" id="consolMeta"></span><span class="chev" id="consolChev">▸</span></span>
-    </div>
-    <div id="consolidaBody" class="collapsed">
-      <p class="hint">Junte mais de um rolê (inclusive o que está em edição) e feche tudo numa conta só. As pessoas são somadas pelo nome — quem aparece em vários eventos entra uma vez só no acerto final.</p>
-      <div id="consolidaList"></div>
-      <div id="consolidaResult"></div>
     </div>
   </section>
 
@@ -715,7 +715,7 @@ function renderPessoas(){
     el.innerHTML = `
       <div class="p-top">
         <span class="av p-av"></span>
-        <input class="nm up" list="nomesHist" autocomplete="off" placeholder="Nome" value="${escapeHtml(p.nome)}">
+        <input class="nm up" list="nomesHist" placeholder="Nome" value="${escapeHtml(p.nome)}">
         <button class="del" title="Remover">×</button>
       </div>
       <div class="grid3">
@@ -743,24 +743,25 @@ function renderPessoas(){
 
     el.querySelector('.peso').value = String(p.peso);
     const pav = el.querySelector('.p-av'); setAvatar(pav, p.nome);
-    el.querySelector('.nm').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); p.nome = e.target.value; setAvatar(pav, p.nome); recalc(); renderGastos(); autosave(); });
-    el.querySelector('.peso').addEventListener('change', e=>{ p.peso = parseFloat(e.target.value); recalc(); autosave(); });
-    el.querySelector('.bebe').addEventListener('click', ()=>{ p.bebe = !p.bebe; renderPessoas(); recalc(); autosave(); });
-    el.querySelector('.pix-toggle').addEventListener('click', ()=>{ el.querySelector('.pix-box').classList.toggle('show'); });
     const pixEl = el.querySelector('.pix-key');
-    pixEl.addEventListener('input', e=>{ p.pix = e.target.value; recalc(); autosave(); });
-    pixEl.addEventListener('blur', ()=>{ const n = normalizarPix(p.pix); if(n !== p.pix){ p.pix = n; pixEl.value = n; recalc(); autosave(); toast('Coloquei o +55 no telefone'); } });
-    el.querySelector('.nm').addEventListener('change', ()=>{
+    function autofillPix(){
       if((p.pix||'').trim()) return;                 // já tem PIX → não mexe
       const nome = (p.nome||'').trim(); if(!nome) return;
-      const known = pixConhecido(nome);
+      const known = pixConhecido(nome);              // busca exata no caderninho
       if(known){
         p.pix = known; pixEl.value = known;
         el.querySelector('.pix-box').classList.add('show');
         const tg = el.querySelector('.pix-toggle'); if(tg) tg.textContent = 'chave pix ✓';
         recalc(); autosave(); toast('PIX de ' + nome + ' preenchido');
       }
-    });
+    }
+    el.querySelector('.nm').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); p.nome = e.target.value; setAvatar(pav, p.nome); autofillPix(); recalc(); renderGastos(); autosave(); });
+    el.querySelector('.nm').addEventListener('change', autofillPix);
+    el.querySelector('.peso').addEventListener('change', e=>{ p.peso = parseFloat(e.target.value); recalc(); autosave(); });
+    el.querySelector('.bebe').addEventListener('click', ()=>{ p.bebe = !p.bebe; renderPessoas(); recalc(); autosave(); });
+    el.querySelector('.pix-toggle').addEventListener('click', ()=>{ el.querySelector('.pix-box').classList.toggle('show'); });
+    pixEl.addEventListener('input', e=>{ p.pix = e.target.value; recalc(); autosave(); });
+    pixEl.addEventListener('blur', ()=>{ const n = normalizarPix(p.pix); if(n !== p.pix){ p.pix = n; pixEl.value = n; recalc(); autosave(); toast('Coloquei o +55 no telefone'); } });
     el.querySelector('.del').addEventListener('click', ()=>{
       const idx = state.pessoas.indexOf(p);
       const cleared = state.gastos.filter(g=>g.pagador===p.id).map(g=>g.id);
