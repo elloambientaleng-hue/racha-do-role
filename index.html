@@ -841,7 +841,7 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
     if(qr) qr.addEventListener('click', ()=>openQR(pg, payload));
     const wp = payEl.querySelector('.send-wpp');
     if(wp) wp.addEventListener('click', ()=>{
-      const msg = `Oi ${pg.deNome}! 👋\nDo rolê "${ctxNome}", ficou ${fmt(pg.valor)} pra você. 💸\n\nCopia o código PIX abaixo e cola no app do seu banco:\n\n${payload}`;
+      const msg = `Oi ${pg.deNome}!\nDo rolê "${ctxNome}", ficou ${fmt(pg.valor)} pra você.\n\nCopia o código PIX abaixo e cola no app do seu banco:\n\n${payload}`;
       window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
     });
   });
@@ -862,9 +862,9 @@ function renderAcerto(){
 }
 
 function shareResumo(nome, total, pagamentos){
-  let msg = `🎉 Racha do Rolê - ${nome}\n\n💰 Total: ${fmt(total)}\n\nQuem paga quem:\n`;
-  pagamentos.forEach(pg=>{ msg += `• ${pg.deNome} paga ${fmt(pg.valor)} pra ${pg.paraNome}\n`; });
-  msg += `\n💸 Cada um manda o PIX pra fechar a conta!`;
+  let msg = `Racha do Rolê - ${nome}\n\nTotal: ${fmt(total)}\n\nQuem paga quem:\n`;
+  pagamentos.forEach(pg=>{ msg += `- ${pg.deNome} paga ${fmt(pg.valor)} pra ${pg.paraNome}\n`; });
+  msg += `\nCada um manda o PIX pra fechar a conta!`;
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 }
 
@@ -1221,7 +1221,7 @@ function deserialize(str){
   return { nome:o.n||'Rolê compartilhado', pessoas, gastos, simples:o.s?true:false };
 }
 function linkDoRole(){ return location.origin + location.pathname + '#r=' + serialize(state); }
-function mensagemZap(link){ return `🎉 Racha do Rolê - ${state.nome}\n\nBora fechar a conta! Toca no link que já abre com tudo preenchido:\n\n${link}`; }
+function mensagemZap(link){ return `Racha do Rolê - ${state.nome}\n\nBora fechar a conta! Toca no link que já abre com tudo preenchido:\n\n${link}`; }
 
 document.getElementById('btnShare').addEventListener('click', ()=>{
   const link = linkDoRole();
