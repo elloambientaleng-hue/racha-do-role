@@ -129,6 +129,17 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     font-family:'Oswald',sans-serif;letter-spacing:.1em;text-transform:uppercase}
   .pagar-voltar:hover{color:var(--ember1)}
 
+  /* MODAL DE CONFIRMAÇÃO */
+  .confirm-btns{display:flex;gap:10px}
+  .confirm-ok,.confirm-cancel{flex:1;padding:13px;border-radius:11px;cursor:pointer;
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;transition:.15s}
+  .confirm-ok{border:none;background:var(--ember);color:#fff;box-shadow:0 4px 12px rgba(224,83,58,.26)}
+  .confirm-ok:hover{filter:brightness(1.06)}
+  .confirm-ok:active{transform:scale(.97)}
+  .confirm-cancel{border:1px solid var(--linha);background:var(--card);color:var(--fumaca)}
+  .confirm-cancel:hover{border-color:var(--ember2);color:var(--creme)}
+  .confirm-cancel:active{transform:scale(.97)}
+
   /* CONSOLIDADO RECOLHÍVEL */
   .consol-head{cursor:pointer;user-select:none;margin-bottom:0}
   .consol-head:hover .chev{color:var(--ember1)}
@@ -194,7 +205,23 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   section:nth-of-type(2) .ico{background:rgba(231,154,52,.17);color:#c07d1f}
   section:nth-of-type(3) .ico{background:rgba(31,157,106,.16);color:#148a5b}
   section:nth-of-type(4) .ico{background:rgba(124,92,255,.16);color:#6b4be0}
-  section:nth-of-type(5) .ico{background:rgba(236,72,153,.15);color:#d1418a}
+  section:nth-of-type(5) .ico{background:rgba(37,99,235,.15);color:#2563eb}
+  section:nth-of-type(6) .ico{background:rgba(236,72,153,.15);color:#d1418a}
+
+  /* CONTATOS */
+  .contato{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid var(--linha);
+    border-radius:11px;margin-bottom:8px;background:var(--card2)}
+  .contato .ci-info{flex:1;min-width:0}
+  .contato .ci-n{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .contato-pix{margin-top:5px;font-size:13px;padding:7px 9px}
+  .novo-contato{display:flex;gap:8px;margin-top:10px}
+  .novo-contato #novoContatoNome{flex:1;min-width:0}
+  .novo-contato #novoContatoPix{flex:1.4;min-width:0}
+  .novo-contato #addContato{white-space:nowrap;padding:0 14px;border-radius:9px;border:1px solid var(--linha);
+    background:var(--card);color:var(--ember1);font-family:'Oswald',sans-serif;font-size:11px;
+    letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.15s}
+  .novo-contato #addContato:hover{border-color:var(--ember2)}
+  .novo-contato #addContato:active{transform:scale(.97)}
 
   /* PROGRESSO + MARCAR PAGO */
   .prog{margin:0 0 14px}
@@ -482,6 +509,23 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     </div>
   </section>
 
+  <!-- CONTATOS -->
+  <section>
+    <div class="shead consol-head" id="contatosHead">
+      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20v-1a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1"/><circle cx="10.5" cy="8" r="3.2"/><path d="M20 20v-1a4 4 0 0 0-3-3.85"/></svg></span>Contatos</h2>
+      <span class="consol-right"><span class="consol-meta" id="contatosMeta"></span><span class="chev" id="contatosChev">▸</span></span>
+    </div>
+    <div id="contatosBody" class="collapsed">
+      <p class="hint">As chaves PIX que o app guardou. Elas preenchem sozinhas quando você digita o nome da pessoa num rolê. Dá pra editar, adicionar ou remover aqui.</p>
+      <div id="contatosList"></div>
+      <div class="novo-contato">
+        <input id="novoContatoNome" class="up" list="nomesHist" placeholder="Nome">
+        <input id="novoContatoPix" placeholder="Chave PIX">
+        <button id="addContato">+ Add</button>
+      </div>
+    </div>
+  </section>
+
   <!-- CONSOLIDADO -->
   <section>
     <div class="shead consol-head" id="consolHead">
@@ -521,6 +565,19 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     <button class="close-x" id="shareClose">Fechar</button>
   </div>
 </div>
+
+<div class="overlay" id="confirmOverlay">
+  <div class="modal">
+    <h3 id="confirmTitulo">Confirmar</h3>
+    <div class="mwho" id="confirmTexto" style="margin-bottom:18px"></div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="confirmCancel">Cancelar</button>
+      <button class="confirm-ok" id="confirmOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<datalist id="nomesHist"></datalist>
 
 <div class="toast" id="toast"></div>
 
@@ -658,7 +715,7 @@ function renderPessoas(){
     el.innerHTML = `
       <div class="p-top">
         <span class="av p-av"></span>
-        <input class="nm up" placeholder="Nome" value="${escapeHtml(p.nome)}">
+        <input class="nm up" list="nomesHist" autocomplete="off" placeholder="Nome" value="${escapeHtml(p.nome)}">
         <button class="del" title="Remover">×</button>
       </div>
       <div class="grid3">
@@ -693,6 +750,17 @@ function renderPessoas(){
     const pixEl = el.querySelector('.pix-key');
     pixEl.addEventListener('input', e=>{ p.pix = e.target.value; recalc(); autosave(); });
     pixEl.addEventListener('blur', ()=>{ const n = normalizarPix(p.pix); if(n !== p.pix){ p.pix = n; pixEl.value = n; recalc(); autosave(); toast('Coloquei o +55 no telefone'); } });
+    el.querySelector('.nm').addEventListener('change', ()=>{
+      if((p.pix||'').trim()) return;                 // já tem PIX → não mexe
+      const nome = (p.nome||'').trim(); if(!nome) return;
+      const known = pixConhecido(nome);
+      if(known){
+        p.pix = known; pixEl.value = known;
+        el.querySelector('.pix-box').classList.add('show');
+        const tg = el.querySelector('.pix-toggle'); if(tg) tg.textContent = 'chave pix ✓';
+        recalc(); autosave(); toast('PIX de ' + nome + ' preenchido');
+      }
+    });
     el.querySelector('.del').addEventListener('click', ()=>{
       const idx = state.pessoas.indexOf(p);
       const cleared = state.gastos.filter(g=>g.pagador===p.id).map(g=>g.id);
@@ -951,6 +1019,7 @@ document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id
 
 /* ========================= SALVAR + CONSOLIDADO ========================= */
 let savedCache = {};
+let contatos = {};   // caderninho { NOME: chave PIX }
 let selectedConsolida = new Set();
 
 async function refreshSaved(){
@@ -960,6 +1029,7 @@ async function refreshSaved(){
   updateConsolidaResult();
   renderGaleraImport();
   updateConsolHeader();
+  atualizarHistoricoNomes();
 }
 
 function renderSaved(){
@@ -998,14 +1068,15 @@ async function salvarRole(){
   const alvo = nome.toLowerCase();
   const existenteId = Object.keys(savedCache).find(id => (savedCache[id].state.nome||'').trim().toLowerCase() === alvo);
   let id, atualizou = false;
-  if(existenteId && confirm(`Já existe um rolê chamado "${nome}".\n\nOK = atualizar esse rolê\nCancelar = salvar como um novo`)){
+  if(existenteId && await confirmar({ titulo:'Rolê já existe', texto:`Já existe um rolê chamado "${nome}". O que você quer fazer?`, ok:'Atualizar', cancel:'Salvar novo' })){
     id = existenteId; atualizou = true;
   } else {
     id = uid();
   }
   savedCache[id] = { savedAt: Date.now(), state: JSON.parse(JSON.stringify(state)) };
   await store.set('racha:saved', savedCache);
-  renderSaved(); renderConsolidaList(); updateConsolidaResult(); renderGaleraImport(); updateConsolHeader();
+  await aprenderContatos(state);
+  renderSaved(); renderConsolidaList(); updateConsolidaResult(); renderGaleraImport(); updateConsolHeader(); atualizarHistoricoNomes(); renderContatos(); updateContatosHeader();
   toast(atualizou ? 'Rolê atualizado ✅' : 'Rolê salvo em Meus Rolês ✅');
 }
 document.getElementById('btnSalvarTop').addEventListener('click', salvarRole);
@@ -1034,7 +1105,7 @@ document.getElementById('consolHead').addEventListener('click', ()=>toggleConsol
 
 /* ---- backup: exportar / importar ---- */
 function exportarDados(){
-  const dados = { app:'racha-do-role', versao:1, exportadoEm:new Date().toISOString(), salvos:savedCache, atual:state };
+  const dados = { app:'racha-do-role', versao:1, exportadoEm:new Date().toISOString(), salvos:savedCache, contatos:contatos, atual:state };
   const blob = new Blob([JSON.stringify(dados,null,2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1058,7 +1129,11 @@ function importarDados(file){
       });
       if(n===0) throw new Error('vazio');
       await store.set('racha:saved', savedCache);
-      renderSaved(); renderConsolidaList(); updateConsolidaResult(); renderGaleraImport();
+      if(dados.contatos && typeof dados.contatos==='object'){
+        Object.assign(contatos, dados.contatos);
+        await store.set('racha:contatos', contatos);
+      }
+      renderSaved(); renderConsolidaList(); updateConsolidaResult(); renderGaleraImport(); renderContatos(); updateContatosHeader();
       toast(`${n} rolê${n>1?'s':''} importado${n>1?'s':''} ✅`);
     }catch(e){ toast('Arquivo de backup inválido ✗'); }
   };
@@ -1156,6 +1231,100 @@ function updateConsolidaResult(){
 
 /* ========================= GLUE ========================= */
 function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+/* histórico de nomes já usados (autocomplete) */
+function atualizarHistoricoNomes(){
+  const nomes = new Set();
+  Object.values(savedCache).forEach(s=>{
+    (s.state && s.state.pessoas || []).forEach(p=>{ const n=(p.nome||'').trim(); if(n) nomes.add(n); });
+  });
+  (state.pessoas || []).forEach(p=>{ const n=(p.nome||'').trim(); if(n) nomes.add(n); });
+  const dl = document.getElementById('nomesHist');
+  dl.innerHTML = [...nomes].sort((a,b)=>a.localeCompare(b,'pt-BR')).map(n=>`<option value="${escapeHtml(n)}"></option>`).join('');
+}
+/* caderninho: última chave PIX conhecida de um nome (a partir dos rolês salvos) */
+function pixConhecido(nome){
+  const alvo = (nome||'').trim();
+  if(!alvo) return '';
+  const up = alvo.toUpperCase();
+  if(contatos[up] && contatos[up].trim()) return contatos[up].trim();  // caderninho primeiro
+  // fallback: varre os rolês salvos
+  let achou = '';
+  Object.keys(savedCache).sort((a,b)=> savedCache[a].savedAt - savedCache[b].savedAt).forEach(id=>{
+    (savedCache[id].state.pessoas||[]).forEach(p=>{
+      if((p.nome||'').trim().toLowerCase()===alvo.toLowerCase() && (p.pix||'').trim()) achou = p.pix.trim();
+    });
+  });
+  return achou;
+}
+
+/* aprende as chaves PIX de um estado (ao salvar) */
+async function aprenderContatos(st){
+  let mudou = false;
+  (st.pessoas||[]).forEach(p=>{ const n=(p.nome||'').trim().toUpperCase(); const k=(p.pix||'').trim(); if(n && k){ contatos[n]=k; mudou=true; } });
+  if(mudou) await store.set('racha:contatos', contatos);
+}
+function updateContatosHeader(){
+  const n = Object.keys(contatos).filter(k=>contatos[k]).length;
+  const meta = document.getElementById('contatosMeta');
+  if(n>0){ meta.textContent = `${n} salvo${n>1?'s':''}`; meta.className = 'consol-meta on'; }
+  else { meta.textContent = 'suas chaves PIX'; meta.className = 'consol-meta'; }
+}
+let contatosAberto = false;
+function toggleContatos(){
+  contatosAberto = !contatosAberto;
+  document.getElementById('contatosBody').classList.toggle('collapsed', !contatosAberto);
+  document.getElementById('contatosChev').textContent = contatosAberto ? '▾' : '▸';
+}
+function renderContatos(){
+  const box = document.getElementById('contatosList');
+  const nomes = Object.keys(contatos).filter(n=>contatos[n]).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  if(nomes.length===0){
+    box.innerHTML = '<div class="empty"><span class="ic">📇</span>Nenhum contato salvo ainda.<br>Salve um rolê com chaves PIX, ou adicione um abaixo.</div>';
+    return;
+  }
+  box.innerHTML = nomes.map(n=>`<div class="contato" data-n="${escapeHtml(n)}">
+    <span class="av" style="background:${nameColor(n)}">${escapeHtml(initialOf(n))}</span>
+    <div class="ci-info"><div class="ci-n">${escapeHtml(n)}</div>
+    <input class="contato-pix" value="${escapeHtml(contatos[n])}" placeholder="Chave PIX"></div>
+    <button class="sbtn x del-contato">Excluir</button>
+  </div>`).join('');
+  box.querySelectorAll('.contato').forEach(row=>{
+    const n = row.dataset.n;
+    const inp = row.querySelector('.contato-pix');
+    inp.addEventListener('input', async e=>{ contatos[n]=e.target.value; await store.set('racha:contatos', contatos); });
+    inp.addEventListener('blur', async e=>{ const v=normalizarPix(e.target.value); if(v!==contatos[n]){ contatos[n]=v; e.target.value=v; await store.set('racha:contatos', contatos); } });
+    row.querySelector('.del-contato').addEventListener('click', async ()=>{
+      delete contatos[n]; await store.set('racha:contatos', contatos);
+      renderContatos(); updateContatosHeader(); toast('Contato removido');
+    });
+  });
+}
+document.getElementById('contatosHead').addEventListener('click', toggleContatos);
+document.getElementById('addContato').addEventListener('click', async ()=>{
+  const nome = (document.getElementById('novoContatoNome').value||'').trim().toUpperCase();
+  const pix = normalizarPix((document.getElementById('novoContatoPix').value||'').trim());
+  if(!nome || !pix){ toast('Preencha nome e chave PIX'); return; }
+  contatos[nome] = pix; await store.set('racha:contatos', contatos);
+  document.getElementById('novoContatoNome').value = '';
+  document.getElementById('novoContatoPix').value = '';
+  renderContatos(); updateContatosHeader(); toast('Contato salvo ✅');
+});
+
+/* modal de confirmação bonito (substitui o confirm() do navegador) */
+function confirmar({titulo='Confirmar', texto='', ok='OK', cancel='Cancelar'}={}){
+  return new Promise(resolve=>{
+    const ov = document.getElementById('confirmOverlay');
+    document.getElementById('confirmTitulo').textContent = titulo;
+    document.getElementById('confirmTexto').textContent = texto;
+    const bOk = document.getElementById('confirmOk'), bCancel = document.getElementById('confirmCancel');
+    bOk.textContent = ok; bCancel.textContent = cancel;
+    function fechar(v){ ov.classList.remove('show'); bOk.onclick=null; bCancel.onclick=null; ov.onclick=null; resolve(v); }
+    bOk.onclick = ()=>fechar(true);
+    bCancel.onclick = ()=>fechar(false);
+    ov.onclick = e=>{ if(e.target===ov) fechar(false); };
+    ov.classList.add('show');
+  });
+}
 let newlyAdded = null;
 function nameColor(name){
   const s=(name||'?').trim()||'?';
@@ -1215,7 +1384,7 @@ function confetti(){
   })(performance.now());
 }
 function recalc(){ renderAcerto(); renderConsolidaList(); updateConsolidaResult(); }
-function syncAll(){ if(!state.pagos) state.pagos={}; document.getElementById('nomeChurra').value = state.nome; aplicarSimples(); renderGaleraImport(); renderPessoas(); renderGastos(); renderAcerto(); renderConsolidaList(); updateConsolidaResult(); updateConsolHeader(); autosave(); }
+function syncAll(){ if(!state.pagos) state.pagos={}; document.getElementById('nomeChurra').value = state.nome; aplicarSimples(); renderGaleraImport(); renderPessoas(); renderGastos(); renderAcerto(); renderConsolidaList(); updateConsolidaResult(); updateConsolHeader(); atualizarHistoricoNomes(); autosave(); }
 
 /* ---- modo simples ---- */
 function aplicarSimples(){
@@ -1229,9 +1398,9 @@ document.getElementById('btnSimples').addEventListener('click', ()=>{
 });
 
 /* ---- novo rolê ---- */
-document.getElementById('btnNovo').addEventListener('click', ()=>{
+document.getElementById('btnNovo').addEventListener('click', async ()=>{
   const temConteudo = state.pessoas.some(p=>p.nome) || state.gastos.some(g=>g.valor||g.desc);
-  if(temConteudo && !confirm('Começar um rolê novo? O que está preenchido agora será limpo. (Seus rolês salvos continuam guardados.)')) return;
+  if(temConteudo && !(await confirmar({ titulo:'Novo rolê', texto:'Começar um rolê novo? O que está preenchido agora será limpo. Seus rolês salvos continuam guardados.', ok:'Começar do zero', cancel:'Cancelar' }))) return;
   state = { nome:'NOVO ROLÊ', pessoas:[novaPessoa(), novaPessoa()], gastos:[novoGasto()], simples:state.simples, pagos:{} };
   syncAll();
   toast('Rolê novo, do zero ✨');
@@ -1259,10 +1428,10 @@ function renderGaleraImport(){
   </div>`;
   document.getElementById('galBtn').addEventListener('click', ()=>importarGalera(document.getElementById('galSel').value));
 }
-function importarGalera(id){
+async function importarGalera(id){
   const src = savedCache[id]; if(!src) return;
   const temNomes = state.pessoas.some(p=>p.nome);
-  if(temNomes && !confirm('Substituir a galera atual pela desse rolê?')) return;
+  if(temNomes && !(await confirmar({ titulo:'Trazer galera', texto:'Isso substitui a galera atual pelas pessoas desse rolê. Quer continuar?', ok:'Substituir', cancel:'Cancelar' }))) return;
   state.pessoas = src.state.pessoas.map(p=>({ id:uid(), nome:p.nome||'', peso:p.peso??1, bebe:p.bebe!==false, pix:p.pix||'' }));
   const ids = new Set(state.pessoas.map(p=>p.id));
   state.gastos.forEach(g=>{ if(!ids.has(g.pagador)) g.pagador=''; });
@@ -1357,6 +1526,15 @@ document.getElementById('nomeChurra').addEventListener('input', e=>{ const pos=e
   syncAll();
   aplicarTema(await store.get('racha:tema'));
   await refreshSaved();
+  // caderninho de contatos: carrega, e se estiver vazio, aprende dos rolês já salvos
+  contatos = (await store.get('racha:contatos')) || {};
+  if(Object.keys(contatos).length === 0){
+    Object.keys(savedCache).sort((a,b)=> savedCache[a].savedAt - savedCache[b].savedAt).forEach(id=>{
+      (savedCache[id].state.pessoas||[]).forEach(p=>{ const n=(p.nome||'').trim().toUpperCase(); const k=(p.pix||'').trim(); if(n && k) contatos[n]=k; });
+    });
+    if(Object.keys(contatos).length) await store.set('racha:contatos', contatos);
+  }
+  renderContatos(); updateContatosHeader();
   if(porLink){
     toast('Rolê aberto pelo link 🔗');
     history.replaceState(null, '', location.pathname + location.search);
