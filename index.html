@@ -129,6 +129,15 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     font-family:'Oswald',sans-serif;letter-spacing:.1em;text-transform:uppercase}
   .pagar-voltar:hover{color:var(--ember1)}
 
+  /* COMPROVANTE */
+  .comp-row{display:flex;gap:8px;margin-top:8px}
+  .comp-add,.comp-ver{flex:1}
+  .comp-del{flex:0 0 auto;padding-left:12px;padding-right:12px}
+  .comp-view{margin:6px 0 4px;text-align:center}
+  .comp-view img{max-width:100%;max-height:60vh;border-radius:12px;border:1px solid var(--linha)}
+  .comp-view .abrir-pdf{display:inline-block;padding:14px 20px;border-radius:12px;background:var(--ember);color:#fff;
+    text-decoration:none;font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+
   /* MODAL DE CONFIRMAÇÃO */
   .confirm-btns{display:flex;gap:10px}
   .confirm-ok,.confirm-cancel{flex:1;padding:13px;border-radius:11px;cursor:pointer;
@@ -300,6 +309,21 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .cat.on[data-c="comida"]{background:rgba(251,109,81,.13);border-color:var(--ember2);color:#b23a22}
   .cat.on[data-c="bebida"]{background:rgba(231,154,52,.16);border-color:#e79a34;color:#a9651a}
   .cat.on[data-c="outros"]{background:rgba(140,129,117,.14);border-color:#c1b6a6;color:#6b6155}
+
+  /* PARTICIPANTES POR ITEM */
+  .parts-ctrl{margin-top:10px}
+  .parts-toggle{background:none;border:none;color:var(--fumaca);font-family:'Oswald',sans-serif;font-size:11px;
+    letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:5px 2px;display:flex;align-items:center;gap:6px}
+  .parts-toggle:hover{color:var(--ember1)}
+  .parts-label{color:var(--fumaca);font-weight:600}
+  .parts-label.custom{color:var(--ember1)}
+  .parts-list{display:none;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .parts-list.show{display:flex}
+  .pchip{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:6px 11px;border-radius:16px;
+    border:1px solid var(--linha);background:var(--card);color:var(--fumaca);cursor:pointer;transition:.15s;max-width:140px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pchip.on{background:rgba(251,109,81,.14);border-color:var(--ember2);color:var(--ember1)}
+  .pchip:active{transform:scale(.95)}
 
   .del{background:none;border:none;color:#b3a99c;cursor:pointer;font-size:20px;line-height:1;padding:4px 6px;transition:.15s;flex-shrink:0}
   .del:hover{color:var(--paga)}
@@ -579,6 +603,16 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
 <datalist id="nomesHist"></datalist>
 
+<input type="file" id="compFile" accept="image/*,application/pdf" style="display:none">
+
+<div class="overlay" id="compOverlay">
+  <div class="modal" style="max-width:440px">
+    <h3>Comprovante</h3>
+    <div id="compView" class="comp-view"></div>
+    <button class="close-x" id="compClose">Fechar</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div id="pagarView">
@@ -813,6 +847,10 @@ function renderGastos(){
         <div class="cat ${g.cat==='comida'?'on':''}" data-c="comida">🍽️ Comida</div>
         <div class="cat ${g.cat==='bebida'?'on':''}" data-c="bebida">🍻 Bebida</div>
         <div class="cat ${g.cat==='outros'?'on':''}" data-c="outros">🧾 Outros</div>
+      </div>
+      <div class="parts-ctrl">
+        <button class="parts-toggle">👥 Quem participou: <span class="parts-label">todos</span> <span class="parts-caret">▾</span></button>
+        <div class="parts-list">${state.pessoas.map(pp=>`<button class="pchip" data-id="${pp.id}">${escapeHtml((pp.nome||'').trim()||'(sem nome)')}</button>`).join('')}</div>
       </div>`;
 
     el.querySelector('.pagador').value = g.pagador;
@@ -822,6 +860,27 @@ function renderGastos(){
     el.querySelectorAll('.cat').forEach(c=>{
       c.addEventListener('click', ()=>{ g.cat=c.dataset.c; renderGastos(); recalc(); autosave(); });
     });
+    // participantes por item
+    const partsList = el.querySelector('.parts-list');
+    const partsLabel = el.querySelector('.parts-label');
+    el.querySelector('.parts-toggle').addEventListener('click', ()=> partsList.classList.toggle('show'));
+    const selAtual = ()=>{ const allIds = state.pessoas.map(x=>x.id); return new Set((g.parts && g.parts.length) ? g.parts.filter(id=>allIds.includes(id)) : allIds); };
+    function pintarChips(){
+      const sel = selAtual(), m = state.pessoas.length;
+      partsList.querySelectorAll('.pchip').forEach(c=> c.classList.toggle('on', sel.has(c.dataset.id)));
+      partsLabel.textContent = (g.parts && g.parts.length && sel.size < m) ? `${sel.size} de ${m}` : 'todos';
+      partsLabel.classList.toggle('custom', !!(g.parts && g.parts.length && sel.size < m));
+    }
+    partsList.querySelectorAll('.pchip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        const allIds = state.pessoas.map(x=>x.id);
+        const sel = selAtual(), pid = chip.dataset.id;
+        if(sel.has(pid)){ if(sel.size<=1) return; sel.delete(pid); } else sel.add(pid);
+        g.parts = (sel.size===allIds.length) ? null : allIds.filter(id=>sel.has(id));
+        pintarChips(); recalc(); autosave();
+      });
+    });
+    pintarChips();
     el.querySelector('.del').addEventListener('click', ()=>{
       const idx = state.gastos.indexOf(g);
       state.gastos.splice(idx,1);
@@ -851,7 +910,15 @@ function computeShares(pessoas, gastos, simples){
     if(g.pagador && paid[g.pagador]!==undefined) paid[g.pagador]+=v;
     // modo simples: todos iguais · senão comida/geral por peso e bebida igual entre quem bebe
     const ehBebida = !simples && g.cat==='bebida';
-    const parts = ehBebida ? pessoas.filter(p=>p.bebe) : pessoas;
+    // quem participa deste item: lista específica (g.parts) ou o padrão
+    let parts;
+    if(g.parts && g.parts.length){
+      const set = new Set(g.parts);
+      parts = pessoas.filter(p=>set.has(p.id));
+      if(parts.length===0) parts = ehBebida ? pessoas.filter(p=>p.bebe) : pessoas; // todos foram removidos → cai no padrão
+    } else {
+      parts = ehBebida ? pessoas.filter(p=>p.bebe) : pessoas;
+    }
     const pesoDe = p => simples ? 1 : (ehBebida ? 1 : (p.peso||0));
     const somaPeso = parts.reduce((s,p)=>s + pesoDe(p), 0);
     if(somaPeso<=0) return;
@@ -945,6 +1012,12 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
       }else{
         html += `<div class="no-pix">Adicione a chave PIX de ${escapeHtml(pg.paraNome)} pra gerar o pagamento.</div>`;
       }
+      if(podeMarcar){
+        const comp = state.comprovantes && state.comprovantes[pagoKey(pg)];
+        html += `<div class="comp-row">` + (comp
+          ? `<button class="btn comp-ver">📎 Ver comprovante</button><button class="btn comp-del" title="Remover comprovante">🗑️</button>`
+          : `<button class="btn comp-add">📎 Anexar comprovante</button>`) + `</div>`;
+      }
       html += `</div>`;
     });
     html += `<button class="share-all">📲 Compartilhar resumo no WhatsApp</button>`;
@@ -968,6 +1041,12 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
         if(agoraTodos && !antesTodos){ confetti(); toast('Tudo acertado! 🎉'); }
       });
     }
+    const add = payEl.querySelector('.comp-add');
+    if(add) add.addEventListener('click', ()=>{ compTargetKey = pagoKey(pg); document.getElementById('compFile').click(); });
+    const ver = payEl.querySelector('.comp-ver');
+    if(ver) ver.addEventListener('click', ()=>abrirComprovante(state.comprovantes[pagoKey(pg)]));
+    const del = payEl.querySelector('.comp-del');
+    if(del) del.addEventListener('click', ()=>{ delete state.comprovantes[pagoKey(pg)]; autosave(); renderAcerto(); toast('Comprovante removido'); });
     if(!pg.paraPix || !pg.paraPix.trim()) return;
     const payload = buildPix(pg.paraPix, pg.valor, pg.paraNome);
     const cp = payEl.querySelector('.copy-pix');
@@ -1339,6 +1418,61 @@ function setAvatar(el,name){ if(!el) return; el.textContent=initialOf(name); el.
 /* chave de "pago" por transferência */
 function pagoKey(pg){ return pg.deNome + '→' + pg.paraNome; }
 
+/* ---- comprovantes (foto/print comprimido ou PDF) ---- */
+let compTargetKey = null;
+function processarComprovante(file, cb){
+  if(!file) return;
+  if(file.type === 'application/pdf'){
+    if(file.size > 600*1024){ toast('PDF grande demais — tente uma foto/print'); return; }
+    const r = new FileReader();
+    r.onload = ()=> cb({ tipo:'pdf', dados:r.result, nome:file.name||'comprovante.pdf' });
+    r.onerror = ()=> toast('Não deu pra ler o arquivo');
+    r.readAsDataURL(file);
+    return;
+  }
+  if(file.type && file.type.startsWith('image/')){
+    const r = new FileReader();
+    r.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const max = 1000;
+        let w = img.width, h = img.height;
+        if(w>max || h>max){ const s = max/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s); }
+        const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        cb({ tipo:'img', dados: cv.toDataURL('image/jpeg', 0.6), nome:file.name||'comprovante.jpg' });
+      };
+      img.onerror = ()=> toast('Não deu pra abrir a imagem');
+      img.src = r.result;
+    };
+    r.readAsDataURL(file);
+    return;
+  }
+  toast('Formato não suportado (use foto, print ou PDF)');
+}
+function abrirComprovante(comp){
+  if(!comp) return;
+  const view = document.getElementById('compView');
+  if(comp.tipo === 'img'){
+    view.innerHTML = `<img src="${comp.dados}" alt="comprovante">`;
+  } else {
+    view.innerHTML = `<a class="abrir-pdf" href="${comp.dados}" target="_blank" rel="noopener">Abrir PDF (${escapeHtml(comp.nome||'comprovante')})</a>`;
+  }
+  document.getElementById('compOverlay').classList.add('show');
+}
+document.getElementById('compClose').addEventListener('click', ()=>document.getElementById('compOverlay').classList.remove('show'));
+document.getElementById('compOverlay').addEventListener('click', e=>{ if(e.target.id==='compOverlay') e.currentTarget.classList.remove('show'); });
+document.getElementById('compFile').addEventListener('change', e=>{
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!file || !compTargetKey) return;
+  processarComprovante(file, obj=>{
+    if(!state.comprovantes) state.comprovantes = {};
+    state.comprovantes[compTargetKey] = obj;
+    autosave(); renderAcerto(); toast('Comprovante anexado ✅');
+  });
+});
+
 /* modo escuro (preferência do aparelho) */
 function aplicarTema(dark){
   document.body.classList.toggle('dark', !!dark);
@@ -1385,7 +1519,7 @@ function confetti(){
   })(performance.now());
 }
 function recalc(){ renderAcerto(); renderConsolidaList(); updateConsolidaResult(); }
-function syncAll(){ if(!state.pagos) state.pagos={}; document.getElementById('nomeChurra').value = state.nome; aplicarSimples(); renderGaleraImport(); renderPessoas(); renderGastos(); renderAcerto(); renderConsolidaList(); updateConsolidaResult(); updateConsolHeader(); atualizarHistoricoNomes(); autosave(); }
+function syncAll(){ if(!state.pagos) state.pagos={}; if(!state.comprovantes) state.comprovantes={}; document.getElementById('nomeChurra').value = state.nome; aplicarSimples(); renderGaleraImport(); renderPessoas(); renderGastos(); renderAcerto(); renderConsolidaList(); updateConsolidaResult(); updateConsolHeader(); atualizarHistoricoNomes(); autosave(); }
 
 /* ---- modo simples ---- */
 function aplicarSimples(){
@@ -1402,7 +1536,7 @@ document.getElementById('btnSimples').addEventListener('click', ()=>{
 document.getElementById('btnNovo').addEventListener('click', async ()=>{
   const temConteudo = state.pessoas.some(p=>p.nome) || state.gastos.some(g=>g.valor||g.desc);
   if(temConteudo && !(await confirmar({ titulo:'Novo rolê', texto:'Começar um rolê novo? O que está preenchido agora será limpo. Seus rolês salvos continuam guardados.', ok:'Começar do zero', cancel:'Cancelar' }))) return;
-  state = { nome:'NOVO ROLÊ', pessoas:[novaPessoa(), novaPessoa()], gastos:[novoGasto()], simples:state.simples, pagos:{} };
+  state = { nome:'NOVO ROLÊ', pessoas:[novaPessoa(), novaPessoa()], gastos:[novoGasto()], simples:state.simples, pagos:{}, comprovantes:{} };
   syncAll();
   toast('Rolê novo, do zero ✨');
 });
@@ -1449,13 +1583,21 @@ function serialize(st){
   const idx = new Map(st.pessoas.map((p,i)=>[p.id,i]));
   const o = { n:st.nome, s:st.simples?1:0,
     p: st.pessoas.map(p=>[p.nome||'', p.peso, p.bebe?1:0, p.pix||'']),
-    g: st.gastos.map(g=>[ (g.pagador!==''&&idx.has(g.pagador))?idx.get(g.pagador):-1, g.desc||'', g.valor||'', Math.max(0,CAT.indexOf(g.cat)) ]) };
+    g: st.gastos.map(g=>{
+      const base = [ (g.pagador!==''&&idx.has(g.pagador))?idx.get(g.pagador):-1, g.desc||'', g.valor||'', Math.max(0,CAT.indexOf(g.cat)) ];
+      if(g.parts && g.parts.length){ base.push(g.parts.map(id=>idx.get(id)).filter(i=>i!==undefined)); }
+      return base;
+    }) };
   return b64urlEnc(JSON.stringify(o));
 }
 function deserialize(str){
   const o = JSON.parse(b64urlDec(str));
   const pessoas = (o.p||[]).map(a=>({ id:uid(), nome:a[0]||'', peso:a[1]||1, bebe:a[2]?true:false, pix:a[3]||'' }));
-  const gastos = (o.g||[]).map(a=>({ id:uid(), pagador:(a[0]>=0&&pessoas[a[0]])?pessoas[a[0]].id:'', desc:a[1]||'', valor:a[2]||'', cat:CAT[a[3]]||'comida' }));
+  const gastos = (o.g||[]).map(a=>{
+    const gg = { id:uid(), pagador:(a[0]>=0&&pessoas[a[0]])?pessoas[a[0]].id:'', desc:a[1]||'', valor:a[2]||'', cat:CAT[a[3]]||'comida' };
+    if(Array.isArray(a[4]) && a[4].length){ gg.parts = a[4].map(i=>pessoas[i] && pessoas[i].id).filter(Boolean); }
+    return gg;
+  });
   return { nome:o.n||'Rolê compartilhado', pessoas, gastos, simples:o.s?true:false };
 }
 function linkDoRole(){ return location.origin + location.pathname + '#r=' + serialize(state); }
