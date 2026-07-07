@@ -1008,6 +1008,7 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
             <button class="btn copy-pix">📋 Copiar PIX</button>
             <button class="btn show-qr">▦ QR Code</button>
             <button class="btn wpp send-wpp">Enviar no zap</button>
+            <button class="btn copy-msg">💬 Copiar cobrança</button>
           </div>`;
       }else{
         html += `<div class="no-pix">Adicione a chave PIX de ${escapeHtml(pg.paraNome)} pra gerar o pagamento.</div>`;
@@ -1053,12 +1054,12 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
     if(cp) cp.addEventListener('click', ()=>copyText(payload));
     const qr = payEl.querySelector('.show-qr');
     if(qr) qr.addEventListener('click', ()=>openQR(pg, payload));
+    const linkPg = linkPagamento(pg, payload);
+    const msgCobranca = `Oi ${pg.deNome}!\nDo rolê "${ctxNome}", ficou ${fmt(pg.valor)} pra você.\n\nToca no link, copia o PIX e cola no seu banco:\n${linkPg}`;
     const wp = payEl.querySelector('.send-wpp');
-    if(wp) wp.addEventListener('click', ()=>{
-      const link = linkPagamento(pg, payload);
-      const msg = `Oi ${pg.deNome}!\nDo rolê "${ctxNome}", ficou ${fmt(pg.valor)} pra você.\n\nToca no link, copia o PIX e cola no seu banco:\n${link}`;
-      window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
-    });
+    if(wp) wp.addEventListener('click', ()=> window.open('https://wa.me/?text='+encodeURIComponent(msgCobranca),'_blank'));
+    const cm = payEl.querySelector('.copy-msg');
+    if(cm) cm.addEventListener('click', ()=> copyText(msgCobranca));
   });
 
   const sa = box.querySelector('.share-all');
