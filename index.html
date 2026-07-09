@@ -107,6 +107,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .tb.on{background:rgba(251,109,81,.12);border-color:var(--ember2);color:var(--ember1)}
   .tb-save{background:var(--ember);color:#fff;border-color:transparent;font-weight:700}
   .tb-save:hover{filter:brightness(1.06);border-color:transparent}
+  #btnAgenda{flex:1 0 100%;justify-content:center}
   .salvar-fim{display:block;width:100%;margin:18px 0 0;padding:16px;border-radius:14px;border:none;cursor:pointer;
     background:var(--ember);color:#fff;font-family:'Oswald',sans-serif;font-weight:700;font-size:15px;
     letter-spacing:.1em;text-transform:uppercase;box-shadow:0 6px 18px rgba(224,83,58,.28);transition:.15s}
@@ -181,11 +182,9 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .galimp button:hover{border-color:var(--ember2)}
   .galimp button:active{transform:scale(.97)}
 
-  /* MODO SIMPLES: esconde consumo, bebida e categorias */
-  body.simple .grid3{grid-template-columns:1fr}
-  body.simple .grid3 > div:nth-child(1),
-  body.simple .grid3 > div:nth-child(2),
-  body.simple .cats{display:none}
+  /* MODO SIMPLES: esconde consumo (todos iguais) */
+  body.simple .grid2{grid-template-columns:1fr}
+  body.simple .grid2 > div:nth-child(1){display:none}
 
   /* DESFAZER */
   .undobar{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
@@ -299,7 +298,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .pessoa{border:1px solid var(--linha);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--card2)}
   .p-top{display:flex;gap:8px;align-items:center}
   .p-top input{flex:1}
-  .grid3{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:10px;align-items:end}
+  .grid3,.grid2{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;align-items:end}
   .toggle{
     font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
     padding:10px 12px;border-radius:9px;border:1px solid var(--linha);background:var(--card);
@@ -324,12 +323,17 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .cat.on[data-c="outros"]{background:rgba(140,129,117,.14);border-color:#c1b6a6;color:#6b6155}
 
   /* PARTICIPANTES POR ITEM */
-  .parts-ctrl{margin-top:10px}
-  .parts-toggle{background:none;border:none;color:var(--fumaca);font-family:'Oswald',sans-serif;font-size:11px;
-    letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:5px 2px;display:flex;align-items:center;gap:6px}
-  .parts-toggle:hover{color:var(--ember1)}
-  .parts-label{color:var(--fumaca);font-weight:600}
+  .item-emoji{font-size:20px;flex-shrink:0;width:26px;text-align:center}
+  .g-r1{display:flex;align-items:center;gap:8px}
+  .g-r1 .desc{flex:1;min-width:0}
+  .parts-ctrl{margin-top:12px}
+  .parts-toggle{width:100%;background:var(--card2);border:1.5px dashed var(--linha);border-radius:11px;
+    color:var(--fumaca);font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;
+    cursor:pointer;padding:11px 13px;display:flex;align-items:center;gap:7px;transition:.15s}
+  .parts-toggle:hover{border-color:var(--ember2);color:var(--ember1)}
+  .parts-label{color:var(--fumaca);font-weight:700;margin-left:auto}
   .parts-label.custom{color:var(--ember1)}
+  .parts-caret{color:var(--fumaca)}
   .parts-list{display:none;flex-wrap:wrap;gap:6px;margin-top:9px}
   .parts-list.show{display:flex}
   .pchip{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:6px 11px;border-radius:16px;
@@ -769,7 +773,7 @@ function renderPessoas(){
         <input class="nm up" list="nomesHist" placeholder="Nome" value="${escapeHtml(p.nome)}">
         <button class="del" title="Remover">×</button>
       </div>
-      <div class="grid3">
+      <div class="grid2">
         <div>
           <label class="mini">Consumo</label>
           <select class="peso">
@@ -778,10 +782,6 @@ function renderPessoas(){
             <option value="1.5">1½ parte</option>
             <option value="2">2 partes</option>
           </select>
-        </div>
-        <div>
-          <label class="mini">Bebida</label>
-          <button class="toggle bebe ${p.bebe?'on':''}">${p.bebe?'🍺 bebe':'não bebe'}</button>
         </div>
         <div>
           <label class="mini">&nbsp;</label>
@@ -809,7 +809,6 @@ function renderPessoas(){
     el.querySelector('.nm').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); p.nome = e.target.value; setAvatar(pav, p.nome); autofillPix(); recalc(); renderGastos(); autosave(); });
     el.querySelector('.nm').addEventListener('change', autofillPix);
     el.querySelector('.peso').addEventListener('change', e=>{ p.peso = parseFloat(e.target.value); recalc(); autosave(); });
-    el.querySelector('.bebe').addEventListener('click', ()=>{ p.bebe = !p.bebe; renderPessoas(); recalc(); autosave(); });
     el.querySelector('.pix-toggle').addEventListener('click', ()=>{ el.querySelector('.pix-box').classList.toggle('show'); });
     pixEl.addEventListener('input', e=>{ p.pix = e.target.value; recalc(); autosave(); });
     pixEl.addEventListener('blur', ()=>{ const n = normalizarPix(p.pix); if(n !== p.pix){ p.pix = n; pixEl.value = n; recalc(); autosave(); toast('Coloquei o +55 no telefone'); } });
@@ -833,6 +832,24 @@ function renderPessoas(){
 }
 
 /* ========================= RENDER: GASTOS ========================= */
+function emojiDoItem(desc){
+  const s = (desc||'').toLowerCase();
+  const tem = (...ks)=> ks.some(k=> s.includes(k));
+  if(!s.trim()) return '🛒';
+  if(tem('carne','picanha','costela','fraldinha','maminha','alcatra','lingui','linguí','frango','asa','coxa','boi','porco','panceta','cupim','espeto','churrasc','carvão','carvao','maminha')) return '🥩';
+  if(tem('cerveja','breja','chopp','chope','heineken','skol','brahma','antar','budweiser','ipa','lager','long neck')) return '🍺';
+  if(tem('vinho','espumante','prosecco')) return '🍷';
+  if(tem('whisky','uisque','uísque','vodka','gin','cachaça','cachaca','pinga','tequila','drink','caipir','licor','rum','aperol','campari')) return '🥃';
+  if(tem('refri','refrigerante','coca','guaran','suco','água','agua','soda','tônica','tonica','energetico','energético')) return '🥤';
+  if(tem('gelo')) return '🧊';
+  if(tem('pizza')) return '🍕';
+  if(tem('lanche','hamburg','hambúrg','burger','x-')) return '🍔';
+  if(tem('bolo','sobremesa','doce','pudim','sorvete','brigadeiro','chocolate','torta')) return '🍰';
+  if(tem('pão','pao','queijo','farofa','vinagrete','maionese','salada','arroz','feijão','feijao','molho','tempero')) return '🧂';
+  if(tem('descartáv','descartav','copo','prato','guardanapo','papel','saco')) return '🧻';
+  if(tem('uber','99','táxi','taxi','transporte','gasolina','combust')) return '🚗';
+  return '🛒';
+}
 function renderGastos(){
   const box = document.getElementById('gastos');
   box.innerHTML = '';
@@ -847,8 +864,9 @@ function renderGastos(){
     el.className = 'gasto' + (g.id===newlyAdded ? ' enter' : '');
     el.innerHTML = `
       <div class="g-r1">
-        <input class="desc up" placeholder="O que foi (ex: picanha, cerveja)" value="${escapeHtml(g.desc)}">
-        <button class="del" title="Remover" style="justify-self:end">×</button>
+        <span class="item-emoji">${emojiDoItem(g.desc)}</span>
+        <input class="desc up" placeholder="O que foi (ex: PICANHA, CERVEJA)" value="${escapeHtml(g.desc)}">
+        <button class="del" title="Remover">×</button>
       </div>
       <div class="g-r2">
         <div>
@@ -860,23 +878,18 @@ function renderGastos(){
           <input class="valor" inputmode="decimal" placeholder="0,00" value="${escapeHtml(g.valor)}">
         </div>
       </div>
-      <div class="cats">
-        <div class="cat ${g.cat==='comida'?'on':''}" data-c="comida">🍽️ Comida</div>
-        <div class="cat ${g.cat==='bebida'?'on':''}" data-c="bebida">🍻 Bebida</div>
-        <div class="cat ${g.cat==='outros'?'on':''}" data-c="outros">🧾 Outros</div>
-      </div>
       <div class="parts-ctrl">
-        <button class="parts-toggle">👥 Quem participou: <span class="parts-label">todos</span> <span class="parts-caret">▾</span></button>
+        <button class="parts-toggle">👥 <span>Quem participou:</span> <span class="parts-label">todos</span> <span class="parts-caret">▾</span></button>
         <div class="parts-list">${state.pessoas.map(pp=>`<button class="pchip" data-id="${pp.id}">${escapeHtml((pp.nome||'').trim()||'(sem nome)')}</button>`).join('')}</div>
       </div>`;
 
     el.querySelector('.pagador').value = g.pagador;
-    el.querySelector('.desc').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); g.desc=e.target.value; autosave(); });
+    const emojiEl = el.querySelector('.item-emoji');
+    el.querySelector('.desc').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); g.desc=e.target.value; emojiEl.textContent = emojiDoItem(g.desc); autosave(); });
     el.querySelector('.pagador').addEventListener('change', e=>{ g.pagador=e.target.value; recalc(); autosave(); });
-    el.querySelector('.valor').addEventListener('input', e=>{ g.valor=e.target.value; recalc(); autosave(); });
-    el.querySelectorAll('.cat').forEach(c=>{
-      c.addEventListener('click', ()=>{ g.cat=c.dataset.c; renderGastos(); recalc(); autosave(); });
-    });
+    const valEl = el.querySelector('.valor');
+    valEl.addEventListener('input', e=>{ g.valor=e.target.value; recalc(); autosave(); });
+    valEl.addEventListener('blur', e=>{ const n=parseMoney(e.target.value); if(n>0){ g.valor = n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); e.target.value = g.valor; recalc(); autosave(); } });
     // participantes por item
     const partsList = el.querySelector('.parts-list');
     const partsLabel = el.querySelector('.parts-label');
@@ -925,18 +938,16 @@ function computeShares(pessoas, gastos, simples){
     if(v<=0) return;
     total += v;
     if(g.pagador && paid[g.pagador]!==undefined) paid[g.pagador]+=v;
-    // modo simples: todos iguais · senão comida/geral por peso e bebida igual entre quem bebe
-    const ehBebida = !simples && g.cat==='bebida';
-    // quem participa deste item: lista específica (g.parts) ou o padrão
+    // participantes do item: lista específica (g.parts) ou todos · dividido por peso
     let parts;
     if(g.parts && g.parts.length){
       const set = new Set(g.parts);
       parts = pessoas.filter(p=>set.has(p.id));
-      if(parts.length===0) parts = ehBebida ? pessoas.filter(p=>p.bebe) : pessoas; // todos foram removidos → cai no padrão
+      if(parts.length===0) parts = pessoas;
     } else {
-      parts = ehBebida ? pessoas.filter(p=>p.bebe) : pessoas;
+      parts = pessoas;
     }
-    const pesoDe = p => simples ? 1 : (ehBebida ? 1 : (p.peso||0));
+    const pesoDe = p => simples ? 1 : (p.peso||0);
     const somaPeso = parts.reduce((s,p)=>s + pesoDe(p), 0);
     if(somaPeso<=0) return;
     parts.forEach(p=>{ fair[p.id] += v * (pesoDe(p)/somaPeso); });
@@ -1022,9 +1033,7 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
         </div>`;
       if(temPix){
         html += `<div class="pay-actions">
-            <button class="btn copy-pix">📋 Copiar PIX</button>
             <button class="btn show-qr">▦ QR Code</button>
-            <button class="btn wpp send-wpp">Enviar no zap</button>
             <button class="btn copy-msg">💬 Copiar cobrança</button>
           </div>`;
       }else{
@@ -1067,17 +1076,10 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
     if(del) del.addEventListener('click', ()=>{ delete state.comprovantes[pagoKey(pg)]; autosave(); renderAcerto(); toast('Comprovante removido'); });
     if(!pg.paraPix || !pg.paraPix.trim()) return;
     const payload = buildPix(pg.paraPix, pg.valor, pg.paraNome);
-    const cp = payEl.querySelector('.copy-pix');
-    if(cp) cp.addEventListener('click', ()=>copyText(payload));
     const qr = payEl.querySelector('.show-qr');
     if(qr) qr.addEventListener('click', ()=>openQR(pg, payload));
     const linkPg = linkPagamento(pg, payload);
     const msgCobranca = `Oi ${pg.deNome}!\nDo rolê "${ctxNome}", ficou ${fmt(pg.valor)} pra você.\n\nToca no link, copia o PIX e cola no seu banco:\n${linkPg}`;
-    const wp = payEl.querySelector('.send-wpp');
-    if(wp) wp.addEventListener('click', ()=>{
-      if(navigator.share){ navigator.share({ text: msgCobranca }).catch(()=>{}); return; }
-      window.open('https://wa.me/?text='+encodeURIComponent(msgCobranca),'_blank');
-    });
     const cm = payEl.querySelector('.copy-msg');
     if(cm) cm.addEventListener('click', ()=> copyText(msgCobranca));
   });
@@ -1546,7 +1548,7 @@ function aplicarSimples(){
 document.getElementById('btnSimples').addEventListener('click', ()=>{
   state.simples = !state.simples;
   aplicarSimples(); renderPessoas(); recalc(); autosave();
-  toast(state.simples ? 'Modo simples: todos iguais ⚖️' : 'Modo detalhado (peso e bebida)');
+  toast(state.simples ? 'Modo simples: todos iguais ⚖️' : 'Modo detalhado (por peso)');
 });
 
 /* ---- novo rolê ---- */
