@@ -339,7 +339,6 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .pessoa.grupo-6{border-color:#0891b2} .pessoa.grupo-6 .grupo{border-color:#0891b2;color:#0891b2;font-weight:700}
   .grupo option[value="1"]{color:#ff2d55} .grupo option[value="2"]{color:#2563eb} .grupo option[value="3"]{color:#16a34a}
   .grupo option[value="4"]{color:#f97316} .grupo option[value="5"]{color:#9333ea} .grupo option[value="6"]{color:#0891b2}
-  .pessoa:not([class*="grupo-"]){border-color:var(--creme);border-width:2px}
   .toggle{
     font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
     padding:10px 12px;border-radius:9px;border:1px solid var(--linha);background:var(--card);
@@ -449,14 +448,11 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     background:var(--recebe);color:#0d2417;font-family:'Oswald',sans-serif;font-weight:700;
     font-size:14px;letter-spacing:.1em;text-transform:uppercase;transition:.15s}
   .share-all:hover{filter:brightness(1.08)}
-  .resumo-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-  .resumo-actions .share-all{flex:1;margin-top:0;min-width:180px;background:var(--send);color:var(--send-ink)}
-  .resumo-actions .share-all:hover{filter:brightness(1.06)}
-  .copy-resumo{flex:1;min-width:130px;margin-top:0;padding:14px;border-radius:12px;cursor:pointer;
-    border:1.5px solid var(--send);background:transparent;color:var(--send);
-    font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;transition:.15s}
-  .copy-resumo:hover{background:var(--send);color:var(--send-ink)}
-  .copy-resumo:active{transform:scale(.97)}
+  .resumo-grande{display:block;width:100%;margin:10px 0 0;padding:16px;border-radius:14px;border:none;cursor:pointer;
+    background:var(--send);color:var(--send-ink);font-family:'Oswald',sans-serif;font-weight:700;font-size:15px;
+    letter-spacing:.09em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.14);transition:.15s}
+  .resumo-grande:hover{filter:brightness(1.06)}
+  .resumo-grande:active{transform:scale(.98)}
   .copiar-grande{width:100%;margin-top:9px;padding:9px 12px;border-radius:8px;cursor:pointer;border:none;
     background:var(--send);color:var(--send-ink);font-family:'Oswald',sans-serif;font-weight:700;font-size:11px;
     letter-spacing:.1em;text-transform:uppercase;transition:.15s;min-height:38px}
@@ -1226,10 +1222,7 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle, c
       }
       html += `</div>`;
     });
-    html += `<div class="resumo-actions">
-      <button class="share-all">📢 Enviar resumo pra galera</button>
-      <button class="copy-resumo">💬 Copiar resumo</button>
-    </div>`;
+    html += `<button class="resumo-grande copy-resumo">📋 Copiar resumo pra galera</button>`;
   } else {
     html += `<div class="empty" style="margin-top:10px">Tá tudo certo — ninguém deve nada a ninguém. 🎉</div>`;
   }
@@ -1264,8 +1257,6 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle, c
     if(cm) cm.addEventListener('click', ()=> copyText(msgCobranca));
   });
 
-  const sa = box.querySelector('.share-all');
-  if(sa) sa.addEventListener('click', ()=>shareResumo(ctxNome, total, balances, pagamentos, compras));
   const cr = box.querySelector('.copy-resumo');
   if(cr) cr.addEventListener('click', ()=> copyText(textoResumo(ctxNome, total, balances, pagamentos, compras)));
 }
@@ -1291,27 +1282,27 @@ function enviarWhatsApp(msg){
   toast('Abri o WhatsApp. Se os emojis saírem quadradinhos, é só colar (Ctrl+V) — já copiei o texto ✅');
 }
 function mensagemCobranca(deNome, ctxNome, valor, link){
-  return `Oi ${deNome}!\nDo rolê *${ctxNome}*, ficou ${fmt(valor)} pra você.\n\nCopia o PIX pelo link e cola no seu banco:\n${link}`;
+  return `💸 Oi ${deNome}!\nDo rolê *${ctxNome}*, ficou *${fmt(valor)}* pra você.\n\n👉 Toca no link, copia o PIX e cola no seu banco:\n${link}`;
 }
 function textoResumo(nome, total, balances, pagamentos, compras){
-  let msg = `*RESUMO · ${nome}*\nTotal da conta: ${fmt(total)}\n`;
+  let msg = `🧾 *RESUMO · ${nome}*\n💰 Total da conta: *${fmt(total)}*\n`;
   if(compras && compras.length){
-    msg += `\n*O que foi comprado:*\n`;
-    compras.forEach(g=>{ const v=parseMoney(g.valor); if(v>0) msg += `- ${(g.desc||'').trim()||'(sem nome)'}: ${fmt(v)}\n`; });
+    msg += `\n🛒 *O que foi comprado:*\n`;
+    compras.forEach(g=>{ const v=parseMoney(g.valor); if(v>0) msg += `${emojiDoItem(g.desc)} ${(g.desc||'').trim()||'(sem nome)'}: ${fmt(v)}\n`; });
   }
-  msg += `\n*Como ficou pra cada um:*\n`;
+  msg += `\n👥 *Como ficou pra cada um:*\n`;
   balances.forEach(b=>{
     let fim;
-    if(b.saldo>0.005) fim = `recebe ${fmt(b.saldo)}`;
-    else if(b.saldo<-0.005) fim = `paga ${fmt(-b.saldo)}`;
-    else fim = `quitado`;
-    msg += `- ${b.nome}: gastou ${fmt(b.paid)} · parte ${fmt(b.fair)} · ${fim}\n`;
+    if(b.saldo>0.005) fim = `recebe ${fmt(b.saldo)} ✅`;
+    else if(b.saldo<-0.005) fim = `paga ${fmt(-b.saldo)} 💸`;
+    else fim = `quitado 🆗`;
+    msg += `• ${b.nome}: gastou ${fmt(b.paid)} · parte ${fmt(b.fair)} · ${fim}\n`;
   });
   if(pagamentos && pagamentos.length){
-    msg += `\n*Acerto (quem paga quem):*\n`;
-    pagamentos.forEach(pg=>{ msg += `- ${pg.deNome} paga ${fmt(pg.valor)} pra ${pg.paraNome}\n`; });
+    msg += `\n🤝 *Acerto (quem paga quem):*\n`;
+    pagamentos.forEach(pg=>{ msg += `• ${pg.deNome} ➡️ ${pg.paraNome}: *${fmt(pg.valor)}*\n`; });
   }
-  msg += `\nConfere ai se ta tudo certo!`;
+  msg += `\nConfere aí se tá tudo certo! 🎉`;
   return msg;
 }
 function shareResumo(nome, total, balances, pagamentos, compras){
