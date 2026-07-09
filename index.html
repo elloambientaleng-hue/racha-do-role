@@ -28,16 +28,21 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     --recebe:#1f9d6a;
     --paga:#d6455e;
     --ember:linear-gradient(90deg,#e0533a,#fb6d51,#ff9e7b);
+    --send:#1f9d6a;
+    --send-ink:#ffffff;
+    --mesh1:rgba(255,140,92,.55); --mesh2:rgba(255,96,128,.46); --mesh3:rgba(129,102,255,.34);
+    --mesh4:rgba(255,190,70,.48); --mesh5:rgba(45,200,165,.16);
+    --logo1:#db2777; --logo2:#6d28d9;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
   body{
     background:
-      radial-gradient(circle at 12% 6%, rgba(255,140,92,.55), transparent 42%),
-      radial-gradient(circle at 88% 4%, rgba(255,96,128,.46), transparent 46%),
-      radial-gradient(circle at 84% 92%, rgba(129,102,255,.34), transparent 48%),
-      radial-gradient(circle at 6% 94%, rgba(255,190,70,.48), transparent 46%),
-      radial-gradient(circle at 50% 55%, rgba(45,200,165,.16), transparent 62%),
+      radial-gradient(circle at 12% 6%, var(--mesh1), transparent 42%),
+      radial-gradient(circle at 88% 4%, var(--mesh2), transparent 46%),
+      radial-gradient(circle at 84% 92%, var(--mesh3), transparent 48%),
+      radial-gradient(circle at 6% 94%, var(--mesh4), transparent 46%),
+      radial-gradient(circle at 50% 55%, var(--mesh5), transparent 62%),
       var(--carvao);
     background-attachment:fixed;
     color:var(--creme);
@@ -63,12 +68,10 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     filter:drop-shadow(0 5px 12px rgba(224,83,58,.38))}
   .wm{margin:2px 0 2px;line-height:.84}
   .wm .l1{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
-    font-size:clamp(15px,4.6vw,20px);letter-spacing:.16em;text-transform:uppercase;color:#db2777}
+    font-size:clamp(15px,4.6vw,20px);letter-spacing:.16em;text-transform:uppercase;color:var(--logo1)}
   .wm .l2{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
-    font-size:clamp(56px,18vw,90px);letter-spacing:-.02em;text-transform:uppercase;color:#db2777;
-    text-shadow:4px 5px 0 #6d28d9}
-  body.dark .wm .l1{color:#f472b6}
-  body.dark .wm .l2{color:#f472b6;text-shadow:4px 5px 0 #a78bfa}
+    font-size:clamp(56px,18vw,90px);letter-spacing:-.02em;text-transform:uppercase;color:var(--logo1);
+    text-shadow:4px 5px 0 var(--logo2)}
   .coals{
     height:5px;width:168px;margin:14px auto 16px;border-radius:4px;
     background:var(--ember);
@@ -203,24 +206,52 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     display:flex;align-items:center;justify-content:center;transition:.15s;box-shadow:0 2px 8px rgba(80,55,35,.08)}
   .theme-toggle:hover{border-color:var(--ember2)}
   .theme-toggle:active{transform:scale(.94)}
-  body.dark{
-    --carvao:#17130f; --card:#211b16; --card2:#2a2219; --linha:#3a2f26;
-    --creme:#f3e9dc; --fumaca:#a89a8b;
-    --ember1:#ff7a5c; --ember2:#ff8a68; --ember3:#ffb492;
-    --cerveja:#eab24a; --recebe:#37c98a; --paga:#ff7f97;
-    --ember:linear-gradient(90deg,#ff6a48,#ff8a68,#ffb492);
+  /* ===== TEMAS ===== */
+  body.tema-azul{
+    --carvao:#eef2fb; --card:#ffffff; --card2:#f2f6fd; --linha:#e0e7f4;
+    --creme:#16233b; --fumaca:#7a869c;
+    --ember1:#2f6fed; --ember2:#4f8bff; --ember3:#8fb4ff; --ember:linear-gradient(90deg,#2f6fed,#4f8bff,#8fb4ff);
+    --recebe:#0ea5a4; --paga:#e0556e; --cerveja:#d98a2b; --send:#0ea5a4; --send-ink:#fff;
+    --mesh1:rgba(47,111,237,.30); --mesh2:rgba(79,70,229,.24); --mesh3:rgba(14,165,164,.22);
+    --mesh4:rgba(96,165,250,.28); --mesh5:rgba(47,111,237,.10); --logo1:#2f6fed; --logo2:#4f46e5;
   }
-  body.dark section{box-shadow:none;border:1px solid var(--linha)}
-  body.dark .theme-toggle{box-shadow:none}
-  body.dark{
-    background:
-      radial-gradient(circle at 12% 6%, rgba(255,110,70,.30), transparent 44%),
-      radial-gradient(circle at 88% 4%, rgba(255,80,120,.26), transparent 46%),
-      radial-gradient(circle at 84% 92%, rgba(140,90,255,.28), transparent 48%),
-      radial-gradient(circle at 6% 94%, rgba(240,170,60,.24), transparent 46%),
-      radial-gradient(circle at 50% 55%, rgba(40,190,155,.14), transparent 62%),
-      var(--carvao);
+  body.tema-tropical{
+    --carvao:#fff4ec; --card:#ffffff; --card2:#fff7f1; --linha:#fae1d1;
+    --creme:#3a2113; --fumaca:#b08a72;
+    --ember1:#ff4d6d; --ember2:#ff7a5c; --ember3:#ff9a3c; --ember:linear-gradient(90deg,#ff4d6d,#ff7a5c,#ff9a3c);
+    --recebe:#12b886; --paga:#ff4d6d; --cerveja:#ff8a00; --send:#12b886; --send-ink:#fff;
+    --mesh1:rgba(255,77,109,.40); --mesh2:rgba(255,138,0,.36); --mesh3:rgba(18,184,134,.24);
+    --mesh4:rgba(255,190,70,.44); --mesh5:rgba(255,61,129,.16); --logo1:#ff3d81; --logo2:#ff8a00;
   }
+  body.tema-menta{
+    --carvao:#eef5f0; --card:#ffffff; --card2:#f4f9f5; --linha:#dde9e2;
+    --creme:#17271f; --fumaca:#7c9187;
+    --ember1:#059669; --ember2:#10b981; --ember3:#5ed0a6; --ember:linear-gradient(90deg,#059669,#10b981,#5ed0a6);
+    --recebe:#0d9488; --paga:#e0556e; --cerveja:#d98a2b; --send:#0d9488; --send-ink:#fff;
+    --mesh1:rgba(16,185,129,.28); --mesh2:rgba(13,148,136,.24); --mesh3:rgba(6,95,70,.18);
+    --mesh4:rgba(94,208,166,.30); --mesh5:rgba(16,185,129,.10); --logo1:#0d9488; --logo2:#065f46;
+  }
+  body.tema-noite{
+    --carvao:#16181d; --card:#20242c; --card2:#272c35; --linha:#2e333d;
+    --creme:#f0ece6; --fumaca:#8b93a1;
+    --ember1:#ff7a5c; --ember2:#ff8a68; --ember3:#ffb492; --ember:linear-gradient(90deg,#ff6a48,#ff8a68,#ffb492);
+    --cerveja:#eab24a; --recebe:#22c55e; --paga:#ff7f97; --send:#22c55e; --send-ink:#0c2417;
+    --mesh1:rgba(255,110,70,.22); --mesh2:rgba(244,114,182,.20); --mesh3:rgba(167,139,250,.22);
+    --mesh4:rgba(240,170,60,.16); --mesh5:rgba(40,190,155,.12); --logo1:#f472b6; --logo2:#a78bfa;
+  }
+  body.tema-noite section{box-shadow:none;border:1px solid var(--linha)}
+  body.tema-noite .theme-toggle{box-shadow:none}
+  .tema-list{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
+  .tema-opt{display:flex;align-items:center;gap:12px;width:100%;padding:11px 13px;border-radius:11px;
+    border:1.5px solid var(--linha);background:var(--card2);cursor:pointer;transition:.15s;
+    font-family:'Oswald',sans-serif;font-weight:600;font-size:14px;color:var(--creme);text-transform:uppercase;letter-spacing:.03em}
+  .tema-opt:hover{border-color:var(--ember2)}
+  .tema-opt.on{border-color:var(--ember1);background:var(--accent-soft,rgba(224,83,58,.10))}
+  .tema-sw{width:30px;height:30px;border-radius:8px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+  .tema-sub{margin-left:auto;font-size:10px;color:var(--fumaca);font-weight:500;letter-spacing:.06em}
+  body.tema-noite input,body.tema-noite select{background:#2b3038}
+  body.tema-noite .nome-churra{background:none}
+  body.tema-noite input::placeholder{color:#7a8494}
 
   /* JOGO DE CORES: cada seção com sua cor */
   section:nth-of-type(1) .ico{background:rgba(251,109,81,.15);color:#e0533a}
@@ -283,10 +314,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     background:#fff;border:1px solid var(--linha);border-radius:9px;
     padding:10px 11px;width:100%;outline:none;transition:border-color .15s,box-shadow .15s;
   }
-  body.dark input,body.dark select{background:#332a20}
-  body.dark .nome-churra{background:none}
   input::placeholder{color:#c9846f}
-  body.dark input::placeholder{color:#c98a76}
   .up{text-transform:uppercase}
   .up::placeholder{text-transform:none}
   input:focus,select:focus{border-color:var(--ember2);box-shadow:0 0 0 3px rgba(251,109,81,.18)}
@@ -327,7 +355,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .item-emoji{font-size:20px;flex-shrink:0;width:26px;text-align:center}
   .g-warn{margin-top:10px;font-size:12.5px;color:#a9651a;background:rgba(231,154,52,.12);
     border:1px solid rgba(231,154,52,.4);border-radius:9px;padding:8px 11px;font-weight:600}
-  body.dark .g-warn{color:#f2c368;background:rgba(231,154,52,.15)}
+  body.tema-noite .g-warn{color:#f2c368;background:rgba(231,154,52,.15)}
   .limpar-tudo{display:block;margin:14px auto 0;background:none;border:none;cursor:pointer;
     color:var(--fumaca);font-family:'Inter',sans-serif;font-size:12px;text-decoration:underline;opacity:.7;transition:.15s}
   .limpar-tudo:hover{color:#c0392b;opacity:1}
@@ -410,15 +438,15 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     font-size:14px;letter-spacing:.1em;text-transform:uppercase;transition:.15s}
   .share-all:hover{filter:brightness(1.08)}
   .resumo-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-  .resumo-actions .share-all{flex:1;margin-top:0;min-width:180px;background:#2f6fed;color:#fff}
-  .resumo-actions .share-all:hover{background:#2560d8}
+  .resumo-actions .share-all{flex:1;margin-top:0;min-width:180px;background:var(--send);color:var(--send-ink)}
+  .resumo-actions .share-all:hover{filter:brightness(1.06)}
   .copy-resumo{flex:1;min-width:130px;margin-top:0;padding:14px;border-radius:12px;cursor:pointer;
-    border:1.5px solid #2f6fed;background:rgba(47,111,237,.10);color:#2f6fed;
+    border:1.5px solid var(--send);background:transparent;color:var(--send);
     font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;transition:.15s}
-  .copy-resumo:hover{background:rgba(47,111,237,.18)}
+  .copy-resumo:hover{background:var(--send);color:var(--send-ink)}
   .copy-resumo:active{transform:scale(.97)}
   .copiar-grande{width:100%;margin-top:9px;padding:9px 12px;border-radius:8px;cursor:pointer;border:none;
-    background:var(--recebe);color:#0d2417;font-family:'Oswald',sans-serif;font-weight:700;font-size:11px;
+    background:var(--send);color:var(--send-ink);font-family:'Oswald',sans-serif;font-weight:700;font-size:11px;
     letter-spacing:.1em;text-transform:uppercase;transition:.15s;min-height:38px}
   .copiar-grande:hover{filter:brightness(1.08)}
   .copiar-grande:active{transform:scale(.98)}
@@ -456,7 +484,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .cgroup + .cgroup, .consol-item + .cgroup{margin-top:14px}
   .warn{background:rgba(231,154,52,.14);border:1px solid rgba(231,154,52,.5);color:#a9651a;
     border-radius:11px;padding:11px 13px;font-size:13px;line-height:1.5;margin-bottom:14px}
-  body.dark .warn{color:#f2c368;background:rgba(231,154,52,.16);border-color:rgba(231,154,52,.42)}
+  body.tema-noite .warn{color:#f2c368;background:rgba(231,154,52,.16);border-color:rgba(231,154,52,.42)}
   .sharelink{width:100%;font-size:12.5px;color:var(--fumaca);background:var(--card2);
     border:1px solid var(--linha);border-radius:9px;padding:10px 11px;margin-bottom:12px;
     word-break:break-all;font-family:'Inter',sans-serif}
@@ -504,9 +532,9 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
   <header class="hero">
     <div class="grate"></div>
-    <button id="btnTema" class="theme-toggle" aria-label="Alternar tema claro/escuro">🌙</button>
+    <button id="btnTema" class="theme-toggle" aria-label="Escolher tema">🎨</button>
     <div class="hero-in">
-      <span class="emblem"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="em" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#db2777"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#em)"/><circle cx="20" cy="12" r="3" fill="#fff"/><rect x="9" y="18.3" width="22" height="3.4" rx="1.7" fill="#fff"/><circle cx="20" cy="28" r="3" fill="#fff"/></svg></span>
+      <span class="emblem"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="em" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--logo1)"/><stop offset="1" stop-color="var(--logo2)"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#em)"/><circle cx="20" cy="12" r="3" fill="#fff"/><rect x="9" y="18.3" width="22" height="3.4" rx="1.7" fill="#fff"/><circle cx="20" cy="28" r="3" fill="#fff"/></svg></span>
       <div class="eyebrow" style="display:none"></div>
       <h1 class="wm"><span class="l1">Racha do</span><span class="l2">Rolê</span></h1>
       <div class="coals"></div>
@@ -632,6 +660,21 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
 <datalist id="nomesHist"></datalist>
 
+<div class="overlay" id="temaOverlay">
+  <div class="modal">
+    <h3>Escolher tema</h3>
+    <div class="mwho" style="margin-bottom:14px">Muda as cores do app todo. Escolhe o que curtir:</div>
+    <div class="tema-list">
+      <button class="tema-opt" data-tema="coral"><span class="tema-sw" style="background:linear-gradient(135deg,#e0533a,#fb6d51)"></span><span>Grafite & Coral</span><span class="tema-sub">aconchegante</span></button>
+      <button class="tema-opt" data-tema="azul"><span class="tema-sw" style="background:linear-gradient(135deg,#2f6fed,#0ea5a4)"></span><span>Fintech Azul</span><span class="tema-sub">confiável</span></button>
+      <button class="tema-opt" data-tema="tropical"><span class="tema-sw" style="background:linear-gradient(135deg,#ff3d81,#ff8a00)"></span><span>Verão Tropical</span><span class="tema-sub">vibrante</span></button>
+      <button class="tema-opt" data-tema="menta"><span class="tema-sw" style="background:linear-gradient(135deg,#059669,#0d9488)"></span><span>Menta & Grafite</span><span class="tema-sub">fresh</span></button>
+      <button class="tema-opt" data-tema="noite"><span class="tema-sw" style="background:linear-gradient(135deg,#20242c,#ff7a5c)"></span><span>Noite</span><span class="tema-sub">escuro</span></button>
+    </div>
+    <button class="close-x" id="temaClose">Fechar</button>
+  </div>
+</div>
+
 <input type="file" id="compFile" accept="image/*,application/pdf" style="display:none">
 
 <div class="overlay" id="compOverlay">
@@ -662,7 +705,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
 <div id="pagarView">
   <div class="pagar-card">
-    <span class="pagar-emblem"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="emp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#db2777"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#emp)"/><circle cx="20" cy="12" r="3" fill="#fff"/><rect x="9" y="18.3" width="22" height="3.4" rx="1.7" fill="#fff"/><circle cx="20" cy="28" r="3" fill="#fff"/></svg></span>
+    <span class="pagar-emblem"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="emp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--logo1)"/><stop offset="1" stop-color="var(--logo2)"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#emp)"/><circle cx="20" cy="12" r="3" fill="#fff"/><rect x="9" y="18.3" width="22" height="3.4" rx="1.7" fill="#fff"/><circle cx="20" cy="28" r="3" fill="#fff"/></svg></span>
     <h2>Pagamento PIX</h2>
     <div class="pagar-para" id="pagarPara"></div>
     <div class="pagar-valor" id="pagarValor"></div>
@@ -1623,18 +1666,27 @@ document.getElementById('compFile').addEventListener('change', e=>{
 });
 
 /* modo escuro (preferência do aparelho) */
-function aplicarTema(dark){
-  document.body.classList.toggle('dark', !!dark);
-  const btn = document.getElementById('btnTema');
-  if(btn) btn.textContent = dark ? '☀️' : '🌙';
+const TEMAS = ['coral','azul','tropical','menta','noite'];
+function aplicarTema(tema){
+  if(tema===1 || tema==='1') tema = 'noite';
+  if(tema===0 || tema==='0') tema = 'coral';
+  if(!TEMAS.includes(tema)) tema = 'coral';
+  document.body.classList.remove('tema-azul','tema-tropical','tema-menta','tema-noite');
+  if(tema!=='coral') document.body.classList.add('tema-'+tema);
+  const cor = { coral:'#fb6d51', azul:'#2f6fed', tropical:'#ff4d6d', menta:'#10b981', noite:'#16181d' }[tema];
   const meta = document.querySelector('meta[name="theme-color"]');
-  if(meta) meta.setAttribute('content', dark ? '#17130f' : '#fb6d51');
+  if(meta) meta.setAttribute('content', cor);
+  document.querySelectorAll('.tema-opt').forEach(o=> o.classList.toggle('on', o.dataset.tema===tema));
 }
-document.getElementById('btnTema').addEventListener('click', ()=>{
-  const dark = !document.body.classList.contains('dark');
-  aplicarTema(dark);
-  store.set('racha:tema', dark ? 1 : 0);
-});
+document.getElementById('btnTema').addEventListener('click', ()=> document.getElementById('temaOverlay').classList.add('show'));
+document.getElementById('temaClose').addEventListener('click', ()=> document.getElementById('temaOverlay').classList.remove('show'));
+document.getElementById('temaOverlay').addEventListener('click', e=>{ if(e.target.id==='temaOverlay') e.currentTarget.classList.remove('show'); });
+document.querySelectorAll('.tema-opt').forEach(o=> o.addEventListener('click', ()=>{
+  const t = o.dataset.tema;
+  aplicarTema(t); store.set('racha:tema', t);
+  document.getElementById('temaOverlay').classList.remove('show');
+  toast('Tema aplicado ✨');
+}));
 
 /* confete de comemoração (sem biblioteca, funciona offline) */
 function confetti(){
