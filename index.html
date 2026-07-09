@@ -324,6 +324,11 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
   /* PARTICIPANTES POR ITEM */
   .item-emoji{font-size:20px;flex-shrink:0;width:26px;text-align:center}
+  .add-agenda{grid-column:1/-1;margin-top:8px;width:100%;padding:9px;border-radius:9px;border:1px dashed var(--ember2);
+    background:rgba(251,109,81,.10);color:var(--ember1);font-family:'Oswald',sans-serif;font-size:11px;
+    letter-spacing:.06em;text-transform:uppercase;font-weight:700;cursor:pointer;transition:.15s}
+  .add-agenda:hover{background:rgba(251,109,81,.18)}
+  .add-agenda:active{transform:scale(.98)}
   .g-r1{display:flex;align-items:center;gap:8px}
   .g-r1 .desc{flex:1;min-width:0}
   .parts-ctrl{margin-top:12px}
@@ -397,6 +402,13 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     background:var(--recebe);color:#0d2417;font-family:'Oswald',sans-serif;font-weight:700;
     font-size:14px;letter-spacing:.1em;text-transform:uppercase;transition:.15s}
   .share-all:hover{filter:brightness(1.08)}
+  .resumo-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .resumo-actions .share-all{flex:1;margin-top:0;min-width:180px}
+  .copy-resumo{flex:1;min-width:130px;margin-top:0;padding:14px;border-radius:12px;cursor:pointer;
+    border:1px solid var(--linha);background:var(--card);color:var(--creme);
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;transition:.15s}
+  .copy-resumo:hover{border-color:var(--ember2);color:var(--ember1)}
+  .copy-resumo:active{transform:scale(.97)}
 
   /* SAVE */
   .save-row{display:grid;grid-template-columns:1fr auto;gap:8px}
@@ -552,7 +564,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   </section>
 
   <!-- CONSOLIDADO -->
-  <section>
+  <section id="consolSection">
     <div class="shead consol-head" id="consolHead">
       <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4.5-9 4.5-9-4.5L12 3z"/><path d="M3 12.5l9 4.5 9-4.5"/></svg></span>Consolidado</h2>
       <span class="consol-right"><span class="consol-meta" id="consolMeta"></span><span class="chev" id="consolChev">▸</span></span>
@@ -790,14 +802,28 @@ function renderPessoas(){
       </div>
       <div class="pix-box ${p.pix?'show':''}">
         <input class="pix-key" style="grid-column:1/-1" placeholder="CPF, e-mail, telefone com +55, ou chave aleatória" value="${escapeHtml(p.pix)}">
+        <button class="add-agenda" style="display:none"></button>
       </div>`;
 
     el.querySelector('.peso').value = String(p.peso);
     const pav = el.querySelector('.p-av'); setAvatar(pav, p.nome);
     const pixEl = el.querySelector('.pix-key');
+    const addAgBtn = el.querySelector('.add-agenda');
+    function refreshAddAg(){
+      const nm = (p.nome||'').trim(), px = (p.pix||'').trim();
+      const jaTem = nm && contatos[nm.toUpperCase()] && contatos[nm.toUpperCase()].trim();
+      if(nm && px && !jaTem){ addAgBtn.style.display='block'; addAgBtn.textContent = '➕ Salvar ' + nm + ' na agenda'; }
+      else addAgBtn.style.display='none';
+    }
+    addAgBtn.addEventListener('click', async ()=>{
+      const nm = (p.nome||'').trim().toUpperCase(), px = normalizarPix((p.pix||'').trim());
+      if(!nm || !px) return;
+      contatos[nm] = px; await store.set('racha:contatos', contatos);
+      updateContatosHeader(); refreshAddAg(); toast(nm + ' salvo na agenda ✅');
+    });
     function autofillPix(){
-      if((p.pix||'').trim()) return;                 // já tem PIX → não mexe
-      const nome = (p.nome||'').trim(); if(!nome) return;
+      if((p.pix||'').trim()){ refreshAddAg(); return; }   // já tem PIX → não mexe
+      const nome = (p.nome||'').trim(); if(!nome){ refreshAddAg(); return; }
       const known = pixConhecido(nome);              // busca exata no caderninho
       if(known){
         p.pix = known; pixEl.value = known;
@@ -805,13 +831,15 @@ function renderPessoas(){
         const tg = el.querySelector('.pix-toggle'); if(tg) tg.textContent = 'chave pix ✓';
         recalc(); autosave(); toast('PIX de ' + nome + ' preenchido');
       }
+      refreshAddAg();
     }
     el.querySelector('.nm').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); p.nome = e.target.value; setAvatar(pav, p.nome); autofillPix(); recalc(); renderGastos(); autosave(); });
     el.querySelector('.nm').addEventListener('change', autofillPix);
     el.querySelector('.peso').addEventListener('change', e=>{ p.peso = parseFloat(e.target.value); recalc(); autosave(); });
     el.querySelector('.pix-toggle').addEventListener('click', ()=>{ el.querySelector('.pix-box').classList.toggle('show'); });
-    pixEl.addEventListener('input', e=>{ p.pix = e.target.value; recalc(); autosave(); });
-    pixEl.addEventListener('blur', ()=>{ const n = normalizarPix(p.pix); if(n !== p.pix){ p.pix = n; pixEl.value = n; recalc(); autosave(); toast('Coloquei o +55 no telefone'); } });
+    pixEl.addEventListener('input', e=>{ p.pix = e.target.value; recalc(); refreshAddAg(); autosave(); });
+    pixEl.addEventListener('blur', ()=>{ const n = normalizarPix(p.pix); if(n !== p.pix){ p.pix = n; pixEl.value = n; recalc(); autosave(); toast('Coloquei o +55 no telefone'); } refreshAddAg(); });
+    refreshAddAg();
     el.querySelector('.del').addEventListener('click', ()=>{
       const idx = state.pessoas.indexOf(p);
       const cleared = state.gastos.filter(g=>g.pagador===p.id).map(g=>g.id);
@@ -834,20 +862,50 @@ function renderPessoas(){
 /* ========================= RENDER: GASTOS ========================= */
 function emojiDoItem(desc){
   const s = (desc||'').toLowerCase();
-  const tem = (...ks)=> ks.some(k=> s.includes(k));
   if(!s.trim()) return '🛒';
-  if(tem('carne','picanha','costela','fraldinha','maminha','alcatra','lingui','linguí','frango','asa','coxa','boi','porco','panceta','cupim','espeto','churrasc','carvão','carvao','maminha')) return '🥩';
-  if(tem('cerveja','breja','chopp','chope','heineken','skol','brahma','antar','budweiser','ipa','lager','long neck')) return '🍺';
-  if(tem('vinho','espumante','prosecco')) return '🍷';
-  if(tem('whisky','uisque','uísque','vodka','gin','cachaça','cachaca','pinga','tequila','drink','caipir','licor','rum','aperol','campari')) return '🥃';
-  if(tem('refri','refrigerante','coca','guaran','suco','água','agua','soda','tônica','tonica','energetico','energético')) return '🥤';
+  const tem = (...ks)=> ks.some(k=> s.includes(k));
+  // churrasco / fogo
+  if(tem('carvão','carvao','acendedor','álcool','alcool','fogo','isqueiro','fósforo','fosforo')) return '🔥';
+  // carnes vermelhas
+  if(tem('carne','picanha','costela','fraldinha','maminha','alcatra','contra','contrafilé','contrafile','cupim','panceta','bife','boi','porco','pernil','bacon','espeto','churrasc','lombo','linguiça','linguica','lingui')) return '🥩';
+  // frango
+  if(tem('frango','coxa','sobrecoxa','asa','asinha','tulipa','galeto')) return '🍗';
+  // peixe / camarão
+  if(tem('peixe','salmão','salmao','tilápia','tilapia','camarão','camarao','sardinha','fritura de peixe')) return '🐟';
+  // cerveja
+  if(tem('cerveja','breja','chopp','chope','heineken','skol','brahma','antar','budweiser','stella','amstel','ipa','lager','long neck','latão','latinha')) return '🍺';
+  // vinho / espumante
+  if(tem('vinho','espumante','prosecco','champanhe','champagne')) return '🍷';
+  // destilados / drinks
+  if(tem('whisky','uisque','uísque','vodka','gin','cachaça','cachaca','pinga','tequila','drink','caipir','licor','rum','aperol','campari','conhaque','absinto')) return '🥃';
+  // café
+  if(tem('café','cafe','capuccino','expresso','espresso')) return '☕';
+  // água
+  if(tem('água','agua')) return '💧';
+  // refri / suco / energético
+  if(tem('refri','refrigerante','coca','pepsi','guaran','fanta','sprite','suco','néctar','nectar','soda','tônica','tonica','energético','energetico','red bull','monster','isotôn','gatorade')) return '🥤';
+  // gelo
   if(tem('gelo')) return '🧊';
-  if(tem('pizza')) return '🍕';
-  if(tem('lanche','hamburg','hambúrg','burger','x-')) return '🍔';
-  if(tem('bolo','sobremesa','doce','pudim','sorvete','brigadeiro','chocolate','torta')) return '🍰';
-  if(tem('pão','pao','queijo','farofa','vinagrete','maionese','salada','arroz','feijão','feijao','molho','tempero')) return '🧂';
-  if(tem('descartáv','descartav','copo','prato','guardanapo','papel','saco')) return '🧻';
-  if(tem('uber','99','táxi','taxi','transporte','gasolina','combust')) return '🚗';
+  // pizza
+  if(tem('pizza','esfiha','esfirra')) return '🍕';
+  // lanche / hamburguer
+  if(tem('lanche','hamburg','hambúrg','burger','x-','cachorro quente','hot dog','hotdog')) return '🍔';
+  // sobremesa / doce
+  if(tem('bolo','sobremesa','doce','pudim','sorvete','açaí','acai','brigadeiro','chocolate','torta','mousse','paçoca','pacoca','pavê','pave')) return '🍰';
+  // fruta
+  if(tem('fruta','abacaxi','melancia','morango','uva','laranja','manga','maçã','maca','banana')) return '🍓';
+  // pão
+  if(tem('pão','pao','baguete','torrada','bisnaguinha')) return '🍞';
+  // queijo
+  if(tem('queijo','provolone','coalho','muçarela','mucarela','mozzarella')) return '🧀';
+  // acompanhamentos / salada / molhos / temperos
+  if(tem('farofa','vinagrete','maionese','salada','arroz','feijão','feijao','molho','tempero','sal ','sal,','pimenta','azeite','alho','mandioca','aipim','batata','purê','pure')) return '🥗';
+  // descartáveis / utensílios
+  if(tem('descartáv','descartav','copo','prato','guardanapo','papel','saco','talher','garfo','faca','toalha','papel toalha','alumínio','aluminio')) return '🧻';
+  // transporte
+  if(tem('uber','99','táxi','taxi','transporte','gasolina','combust','estacionamento')) return '🚗';
+  // cigarro
+  if(tem('cigarro','tabaco','narguile','narguilé')) return '🚬';
   return '🛒';
 }
 function renderGastos(){
@@ -1047,7 +1105,10 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
       }
       html += `</div>`;
     });
-    html += `<button class="share-all">📲 Compartilhar resumo no WhatsApp</button>`;
+    html += `<div class="resumo-actions">
+      <button class="share-all">📢 Enviar resumo pra galera</button>
+      <button class="copy-resumo">💬 Copiar resumo</button>
+    </div>`;
   } else {
     html += `<div class="empty" style="margin-top:10px">Tá tudo certo — ninguém deve nada a ninguém. 🎉</div>`;
   }
@@ -1085,7 +1146,9 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
   });
 
   const sa = box.querySelector('.share-all');
-  if(sa) sa.addEventListener('click', ()=>shareResumo(ctxNome, total, pagamentos));
+  if(sa) sa.addEventListener('click', ()=>shareResumo(ctxNome, total, balances, pagamentos));
+  const cr = box.querySelector('.copy-resumo');
+  if(cr) cr.addEventListener('click', ()=> copyText(textoResumo(ctxNome, total, balances, pagamentos)));
 }
 
 function renderAcerto(){
@@ -1099,10 +1162,21 @@ function renderAcerto(){
   renderSettlement(box, total, balances, pagamentos, state.nome||'Rolê', sub);
 }
 
-function shareResumo(nome, total, pagamentos){
-  let msg = `Racha do Rolê - ${nome}\n\nTotal: ${fmt(total)}\n\nQuem paga quem:\n`;
-  pagamentos.forEach(pg=>{ msg += `- ${pg.deNome} paga ${fmt(pg.valor)} pra ${pg.paraNome}\n`; });
-  msg += `\nCada um manda o PIX pra fechar a conta!`;
+function textoResumo(nome, total, balances, pagamentos){
+  let msg = `RESUMO - ${nome}\n\nTotal da conta: ${fmt(total)}\n\nCONFERENCIA (o que cada um deve):\n`;
+  balances.forEach(b=>{
+    const saldo = b.saldo>0.005 ? `tem a receber ${fmt(b.saldo)}` : (b.saldo<-0.005 ? `deve pagar ${fmt(-b.saldo)}` : 'quitado');
+    msg += `${b.nome}: gastou ${fmt(b.paid)}, parte dele(a) ${fmt(b.fair)} -> ${saldo}\n`;
+  });
+  if(pagamentos && pagamentos.length){
+    msg += `\nACERTO FINAL (quem paga quem):\n`;
+    pagamentos.forEach(pg=>{ msg += `- ${pg.deNome} paga ${fmt(pg.valor)} pra ${pg.paraNome}\n`; });
+  }
+  msg += `\nConfere ai se ta tudo certo!`;
+  return msg;
+}
+function shareResumo(nome, total, balances, pagamentos){
+  const msg = textoResumo(nome, total, balances, pagamentos);
   if(navigator.share){ navigator.share({ text: msg }).catch(()=>{}); return; }
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 }
@@ -1201,9 +1275,13 @@ function toggleConsol(force){
 }
 function updateConsolHeader(){
   const total = consolidaItems().length; // rolê atual + salvos
+  const sec = document.getElementById('consolSection');
+  if(sec) sec.style.display = (total >= 2) ? '' : 'none';   // só aparece com 2+ rolês
   const meta = document.getElementById('consolMeta');
-  if(total >= 2){ meta.textContent = `${total} rolês · juntar`; meta.className = 'consol-meta on'; }
-  else { meta.textContent = 'junta vários rolês'; meta.className = 'consol-meta'; }
+  if(meta){
+    if(total >= 2){ meta.textContent = `${total} rolês · juntar`; meta.className = 'consol-meta on'; }
+    else { meta.textContent = 'junta vários rolês'; meta.className = 'consol-meta'; }
+  }
 }
 document.getElementById('consolHead').addEventListener('click', ()=>toggleConsol());
 
