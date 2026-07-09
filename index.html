@@ -146,6 +146,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   /* COMPROVANTE */
   .comp-row{display:flex;gap:8px;margin-top:8px}
   .comp-add,.comp-ver{flex:1}
+  .opc{opacity:.7;font-weight:400;text-transform:none;letter-spacing:0;font-size:10px}
   .comp-del{flex:0 0 auto;padding-left:12px;padding-right:12px}
   .comp-view{margin:6px 0 4px;text-align:center}
   .comp-view img{max-width:100%;max-height:60vh;border-radius:12px;border:1px solid var(--linha)}
@@ -338,13 +339,16 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .g-r1{display:flex;align-items:center;gap:8px}
   .g-r1 .desc{flex:1;min-width:0}
   .parts-ctrl{margin-top:12px}
-  .parts-toggle{width:100%;background:var(--card2);border:1.5px dashed var(--linha);border-radius:11px;
-    color:var(--fumaca);font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;
-    cursor:pointer;padding:11px 13px;display:flex;align-items:center;gap:7px;transition:.15s}
-  .parts-toggle:hover{border-color:var(--ember2);color:var(--ember1)}
-  .parts-label{color:var(--fumaca);font-weight:700;margin-left:auto}
+  .parts-toggle{width:100%;background:rgba(124,92,255,.09);border:1.5px solid rgba(124,92,255,.4);border-radius:11px;
+    color:#6b4be0;font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;
+    cursor:pointer;padding:13px 14px;display:flex;align-items:center;gap:8px;transition:.15s}
+  body.dark .parts-toggle{color:#b9a6ff;background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.45)}
+  .parts-toggle:hover{background:rgba(124,92,255,.16)}
+  .parts-label{color:#6b4be0;font-weight:800;margin-left:auto}
+  body.dark .parts-label{color:#b9a6ff}
   .parts-label.custom{color:var(--ember1)}
-  .parts-caret{color:var(--fumaca)}
+  .parts-caret{color:#6b4be0}
+  body.dark .parts-caret{color:#b9a6ff}
   .parts-list{display:none;flex-wrap:wrap;gap:6px;margin-top:9px}
   .parts-list.show{display:flex}
   .pchip{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:6px 11px;border-radius:16px;
@@ -957,6 +961,16 @@ function renderGastos(){
       </div>
       <div class="g-warn" style="display:none"></div>`;
 
+    const cc = state.comprovantesCompra && state.comprovantesCompra[g.id];
+    el.insertAdjacentHTML('beforeend', `<div class="comp-row">` + (cc
+      ? `<button class="btn comp-compra-ver">📎 Ver comprovante da compra</button><button class="btn comp-compra-del" title="Remover">🗑️</button>`
+      : `<button class="btn comp-compra-add">📎 Anexar comprovante da compra <span class="opc">(opcional)</span></button>`) + `</div>`);
+    const ccAdd = el.querySelector('.comp-compra-add');
+    if(ccAdd) ccAdd.addEventListener('click', ()=> pedirComprovante(obj=>{ if(!state.comprovantesCompra) state.comprovantesCompra={}; state.comprovantesCompra[g.id]=obj; autosave(); renderGastos(); toast('Comprovante da compra anexado ✅'); }));
+    const ccVer = el.querySelector('.comp-compra-ver');
+    if(ccVer) ccVer.addEventListener('click', ()=> abrirComprovante(state.comprovantesCompra[g.id]));
+    const ccDel = el.querySelector('.comp-compra-del');
+    if(ccDel) ccDel.addEventListener('click', ()=>{ delete state.comprovantesCompra[g.id]; autosave(); renderGastos(); toast('Comprovante removido'); });
     el.querySelector('.pagador').value = g.pagador;
     const emojiEl = el.querySelector('.item-emoji');
     const warnEl = el.querySelector('.g-warn');
@@ -1122,8 +1136,8 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle, c
       if(podeMarcar){
         const comp = state.comprovantes && state.comprovantes[pagoKey(pg)];
         html += `<div class="comp-row">` + (comp
-          ? `<button class="btn comp-ver">📎 Ver comprovante</button><button class="btn comp-del" title="Remover comprovante">🗑️</button>`
-          : `<button class="btn comp-add">📎 Anexar comprovante</button>`) + `</div>`;
+          ? `<button class="btn comp-ver">📎 Ver comprovante de pagamento</button><button class="btn comp-del" title="Remover comprovante">🗑️</button>`
+          : `<button class="btn comp-add">📎 Anexar comprovante de pagamento <span class="opc">(opcional)</span></button>`) + `</div>`;
       }
       html += `</div>`;
     });
@@ -1152,7 +1166,7 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle, c
       });
     }
     const add = payEl.querySelector('.comp-add');
-    if(add) add.addEventListener('click', ()=>{ compTargetKey = pagoKey(pg); document.getElementById('compFile').click(); });
+    if(add) add.addEventListener('click', ()=> pedirComprovante(obj=>{ if(!state.comprovantes) state.comprovantes={}; state.comprovantes[pagoKey(pg)] = obj; autosave(); renderAcerto(); toast('Comprovante de pagamento anexado ✅'); }));
     const ver = payEl.querySelector('.comp-ver');
     if(ver) ver.addEventListener('click', ()=>abrirComprovante(state.comprovantes[pagoKey(pg)]));
     const del = payEl.querySelector('.comp-del');
@@ -1192,28 +1206,27 @@ function enviarWhatsApp(msg){
   toast('Abri o WhatsApp. Se os emojis saírem quadradinhos, é só colar (Ctrl+V) — já copiei o texto ✅');
 }
 function mensagemCobranca(deNome, ctxNome, valor, link){
-  return `💸 Oi ${deNome}!\nDo rolê *${ctxNome}*, ficou ${fmt(valor)} pra você.\n\n👉 Toca no link, copia o PIX e cola no seu banco:\n${link}`;
+  return `Oi ${deNome}!\nDo rolê *${ctxNome}*, ficou ${fmt(valor)} pra você.\n\nCopia o PIX pelo link e cola no seu banco:\n${link}`;
 }
 function textoResumo(nome, total, balances, pagamentos, compras){
-  let msg = `🧾 *RESUMO — ${nome}*\n`;
-  msg += `💰 Total da conta: ${fmt(total)}\n`;
+  let msg = `*RESUMO · ${nome}*\nTotal da conta: ${fmt(total)}\n`;
   if(compras && compras.length){
-    msg += `\n🛒 *O que foi comprado:*\n`;
-    compras.forEach(g=>{ const v=parseMoney(g.valor); if(v>0) msg += `• ${emojiDoItem(g.desc)} ${(g.desc||'').trim()||'(sem nome)'}: ${fmt(v)}\n`; });
+    msg += `\n*O que foi comprado:*\n`;
+    compras.forEach(g=>{ const v=parseMoney(g.valor); if(v>0) msg += `- ${(g.desc||'').trim()||'(sem nome)'}: ${fmt(v)}\n`; });
   }
-  msg += `\n👥 *Como ficou pra cada um:*\n`;
+  msg += `\n*Como ficou pra cada um:*\n`;
   balances.forEach(b=>{
     let fim;
-    if(b.saldo>0.005) fim = `recebe ${fmt(b.saldo)} ✅`;
+    if(b.saldo>0.005) fim = `recebe ${fmt(b.saldo)}`;
     else if(b.saldo<-0.005) fim = `paga ${fmt(-b.saldo)}`;
     else fim = `quitado`;
-    msg += `• ${b.nome}: gastou ${fmt(b.paid)} · parte ${fmt(b.fair)} · ${fim}\n`;
+    msg += `- ${b.nome}: gastou ${fmt(b.paid)} · parte ${fmt(b.fair)} · ${fim}\n`;
   });
   if(pagamentos && pagamentos.length){
-    msg += `\n💸 *Acerto (quem paga quem):*\n`;
-    pagamentos.forEach(pg=>{ msg += `• ${pg.deNome} → ${pg.paraNome}: ${fmt(pg.valor)}\n`; });
+    msg += `\n*Acerto (quem paga quem):*\n`;
+    pagamentos.forEach(pg=>{ msg += `- ${pg.deNome} paga ${fmt(pg.valor)} pra ${pg.paraNome}\n`; });
   }
-  msg += `\nConfere aí se tá tudo certo! 🤝`;
+  msg += `\nConfere ai se ta tudo certo!`;
   return msg;
 }
 function shareResumo(nome, total, balances, pagamentos, compras){
@@ -1560,7 +1573,8 @@ function setAvatar(el,name){ if(!el) return; el.textContent=initialOf(name); el.
 function pagoKey(pg){ return pg.deNome + '→' + pg.paraNome; }
 
 /* ---- comprovantes (foto/print comprimido ou PDF) ---- */
-let compTargetKey = null;
+let compCallback = null;
+function pedirComprovante(cb){ compCallback = cb; document.getElementById('compFile').click(); }
 function processarComprovante(file, cb){
   if(!file) return;
   if(file.type === 'application/pdf'){
@@ -1606,12 +1620,9 @@ document.getElementById('compOverlay').addEventListener('click', e=>{ if(e.targe
 document.getElementById('compFile').addEventListener('change', e=>{
   const file = e.target.files && e.target.files[0];
   e.target.value = '';
-  if(!file || !compTargetKey) return;
-  processarComprovante(file, obj=>{
-    if(!state.comprovantes) state.comprovantes = {};
-    state.comprovantes[compTargetKey] = obj;
-    autosave(); renderAcerto(); toast('Comprovante anexado ✅');
-  });
+  if(!file || !compCallback) return;
+  const cb = compCallback; compCallback = null;
+  processarComprovante(file, cb);
 });
 
 /* modo escuro (preferência do aparelho) */
@@ -1660,7 +1671,7 @@ function confetti(){
   })(performance.now());
 }
 function recalc(){ renderAcerto(); renderConsolidaList(); updateConsolidaResult(); }
-function syncAll(){ if(!state.pagos) state.pagos={}; if(!state.comprovantes) state.comprovantes={}; document.getElementById('nomeChurra').value = state.nome; aplicarSimples(); renderGaleraImport(); renderPessoas(); renderGastos(); renderAcerto(); renderConsolidaList(); updateConsolidaResult(); updateConsolHeader(); atualizarHistoricoNomes(); autosave(); }
+function syncAll(){ if(!state.pagos) state.pagos={}; if(!state.comprovantes) state.comprovantes={}; if(!state.comprovantesCompra) state.comprovantesCompra={}; document.getElementById('nomeChurra').value = state.nome; aplicarSimples(); renderGaleraImport(); renderPessoas(); renderGastos(); renderAcerto(); renderConsolidaList(); updateConsolidaResult(); updateConsolHeader(); atualizarHistoricoNomes(); autosave(); }
 
 /* ---- modo simples ---- */
 function aplicarSimples(){
@@ -1677,7 +1688,7 @@ document.getElementById('btnSimples').addEventListener('click', ()=>{
 document.getElementById('btnNovo').addEventListener('click', async ()=>{
   const temConteudo = state.pessoas.some(p=>p.nome) || state.gastos.some(g=>g.valor||g.desc);
   if(temConteudo && !(await confirmar({ titulo:'Novo rolê', texto:'Começar um rolê novo? O que está preenchido agora será limpo. Seus rolês salvos continuam guardados.', ok:'Começar do zero', cancel:'Cancelar' }))) return;
-  state = { nome:'NOVO ROLÊ', pessoas:[novaPessoa(), novaPessoa()], gastos:[novoGasto()], simples:state.simples, pagos:{}, comprovantes:{} };
+  state = { nome:'NOVO ROLÊ', pessoas:[novaPessoa(), novaPessoa()], gastos:[novoGasto()], simples:state.simples, pagos:{}, comprovantes:{}, comprovantesCompra:{} };
   syncAll();
   toast('Rolê novo, do zero ✨');
 });
