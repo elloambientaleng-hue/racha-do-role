@@ -187,8 +187,8 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .galimp button:active{transform:scale(.97)}
 
   /* MODO SIMPLES: esconde consumo (todos iguais) */
-  body.simple .grid2{grid-template-columns:1fr}
-  body.simple .grid2 > div:nth-child(1){display:none}
+  body.simple .grid3p{grid-template-columns:1fr auto}
+  body.simple .grid3p > div:nth-child(1){display:none}
 
   /* DESFAZER */
   .undobar{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
@@ -328,6 +328,15 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .p-top{display:flex;gap:8px;align-items:center}
   .p-top input{flex:1}
   .grid3,.grid2{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;align-items:end}
+  .grid3p{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:10px;align-items:end}
+  /* cores dos grupos (casais/turmas que pagam juntos) */
+  .pessoa[class*="grupo-"]{border-left:4px solid var(--linha)}
+  .pessoa.grupo-1{border-left-color:#7c5cff}
+  .pessoa.grupo-2{border-left-color:#2f6fed}
+  .pessoa.grupo-3{border-left-color:#12b886}
+  .pessoa.grupo-4{border-left-color:#ff8a00}
+  .pessoa.grupo-5{border-left-color:#ff3d81}
+  .pessoa.grupo-6{border-left-color:#0ea5a4}
   .toggle{
     font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
     padding:10px 12px;border-radius:9px;border:1px solid var(--linha);background:var(--card);
@@ -821,7 +830,7 @@ function buildPix(key, valor, nome){
 /* ---------- estado ---------- */
 let state = { nome:'ROLÊ DE SEXTA', pessoas:[], gastos:[], simples:false };
 
-function novaPessoa(){ return { id:uid(), nome:'', peso:1, bebe:true, pix:'' }; }
+function novaPessoa(){ return { id:uid(), nome:'', peso:1, bebe:true, pix:'', grupo:'' }; }
 function novoGasto(){ return { id:uid(), pagador:'', desc:'', valor:'', cat:'comida' }; }
 
 /* ---------- autosave ---------- */
@@ -837,14 +846,14 @@ function renderPessoas(){
   }
   state.pessoas.forEach(p => {
     const el = document.createElement('div');
-    el.className = 'pessoa' + (p.id===newlyAdded ? ' enter' : '');
+    el.className = 'pessoa' + (p.id===newlyAdded ? ' enter' : '') + (p.grupo ? ' grupo-'+p.grupo : '');
     el.innerHTML = `
       <div class="p-top">
         <span class="av p-av"></span>
         <input class="nm up" list="nomesHist" placeholder="Nome" value="${escapeHtml(p.nome)}">
         <button class="del" title="Remover">×</button>
       </div>
-      <div class="grid2">
+      <div class="grid3p">
         <div>
           <label class="mini">Consumo</label>
           <select class="peso">
@@ -852,6 +861,18 @@ function renderPessoas(){
             <option value="1">1 parte</option>
             <option value="1.5">1½ parte</option>
             <option value="2">2 partes</option>
+          </select>
+        </div>
+        <div>
+          <label class="mini">Fecha junto</label>
+          <select class="grupo">
+            <option value="">Sozinho</option>
+            <option value="1">Grupo 1</option>
+            <option value="2">Grupo 2</option>
+            <option value="3">Grupo 3</option>
+            <option value="4">Grupo 4</option>
+            <option value="5">Grupo 5</option>
+            <option value="6">Grupo 6</option>
           </select>
         </div>
         <div>
@@ -865,6 +886,7 @@ function renderPessoas(){
       </div>`;
 
     el.querySelector('.peso').value = String(p.peso);
+    el.querySelector('.grupo').value = p.grupo || '';
     const pav = el.querySelector('.p-av'); setAvatar(pav, p.nome);
     const pixEl = el.querySelector('.pix-key');
     const addAgBtn = el.querySelector('.add-agenda');
@@ -895,6 +917,7 @@ function renderPessoas(){
     el.querySelector('.nm').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); p.nome = e.target.value; setAvatar(pav, p.nome); autofillPix(); recalc(); renderGastos(); autosave(); });
     el.querySelector('.nm').addEventListener('change', autofillPix);
     el.querySelector('.peso').addEventListener('change', e=>{ p.peso = parseFloat(e.target.value); recalc(); autosave(); });
+    el.querySelector('.grupo').addEventListener('change', e=>{ p.grupo = e.target.value; renderPessoas(); recalc(); autosave(); });
     el.querySelector('.pix-toggle').addEventListener('click', ()=>{ el.querySelector('.pix-box').classList.toggle('show'); });
     pixEl.addEventListener('input', e=>{ p.pix = e.target.value; recalc(); refreshAddAg(); autosave(); });
     pixEl.addEventListener('blur', ()=>{ const n = normalizarPix(p.pix); if(n !== p.pix){ p.pix = n; pixEl.value = n; recalc(); autosave(); toast('Coloquei o +55 no telefone'); } refreshAddAg(); });
@@ -1091,7 +1114,7 @@ function computeShares(pessoas, gastos, simples){
   });
   const rows = pessoas.map(p=>({
     nome:(p.nome||'').trim() || '(sem nome)',
-    pix:(p.pix||''),
+    pix:(p.pix||''), grupo:(p.grupo||''),
     paid:paid[p.id], fair:fair[p.id]
   }));
   return { rows, total };
@@ -1099,9 +1122,28 @@ function computeShares(pessoas, gastos, simples){
 
 function buildBalances(rows){
   return rows.map(r=>({
-    nome:r.nome, pix:r.pix||'', paid:r.paid, fair:r.fair,
+    nome:r.nome, pix:r.pix||'', grupo:r.grupo||'', paid:r.paid, fair:r.fair,
     saldo: Math.round((r.paid - r.fair)*100)/100
   }));
+}
+
+// junta no acerto as pessoas do mesmo grupo (ex: casais pagam juntos)
+function agruparBalances(balances){
+  const grupos = {}; const soltos = [];
+  balances.forEach(b=>{
+    if(b.grupo){
+      if(!grupos[b.grupo]) grupos[b.grupo] = { nomes:[], pix:'', paid:0, fair:0 };
+      const g = grupos[b.grupo];
+      g.nomes.push(b.nome);
+      g.paid += b.paid; g.fair += b.fair;
+      if(!g.pix && (b.pix||'').trim()) g.pix = b.pix;   // usa a primeira chave PIX do grupo
+    } else soltos.push(b);
+  });
+  const merged = Object.values(grupos).map(g=>({
+    nome: g.nomes.join(' + '), pix: g.pix, paid: g.paid, fair: g.fair,
+    saldo: Math.round((g.paid - g.fair)*100)/100, juntos:true
+  }));
+  return [...soltos, ...merged];
 }
 
 // acerto: menor número de transferências
@@ -1121,7 +1163,7 @@ function settle(balances){
 
 function calcular(){
   const { rows, total } = computeShares(state.pessoas, state.gastos, state.simples);
-  const balances = buildBalances(rows);
+  const balances = agruparBalances(buildBalances(rows));
   return { total, balances, pagamentos: settle(balances) };
 }
 
@@ -1783,7 +1825,7 @@ function b64urlDec(s){ s = s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length
 function serialize(st){
   const idx = new Map(st.pessoas.map((p,i)=>[p.id,i]));
   const o = { n:st.nome, s:st.simples?1:0,
-    p: st.pessoas.map(p=>[p.nome||'', p.peso, p.bebe?1:0, p.pix||'']),
+    p: st.pessoas.map(p=>[p.nome||'', p.peso, p.bebe?1:0, p.pix||'', p.grupo||'']),
     g: st.gastos.map(g=>{
       const base = [ (g.pagador!==''&&idx.has(g.pagador))?idx.get(g.pagador):-1, g.desc||'', g.valor||'', Math.max(0,CAT.indexOf(g.cat)) ];
       if(g.parts && g.parts.length){ base.push(g.parts.map(id=>idx.get(id)).filter(i=>i!==undefined)); }
@@ -1793,7 +1835,7 @@ function serialize(st){
 }
 function deserialize(str){
   const o = JSON.parse(b64urlDec(str));
-  const pessoas = (o.p||[]).map(a=>({ id:uid(), nome:a[0]||'', peso:a[1]||1, bebe:a[2]?true:false, pix:a[3]||'' }));
+  const pessoas = (o.p||[]).map(a=>({ id:uid(), nome:a[0]||'', peso:a[1]||1, bebe:a[2]?true:false, pix:a[3]||'', grupo:a[4]||'' }));
   const gastos = (o.g||[]).map(a=>{
     const gg = { id:uid(), pagador:(a[0]>=0&&pessoas[a[0]])?pessoas[a[0]].id:'', desc:a[1]||'', valor:a[2]||'', cat:CAT[a[3]]||'comida' };
     if(Array.isArray(a[4]) && a[4].length){ gg.parts = a[4].map(i=>pessoas[i] && pessoas[i].id).filter(Boolean); }
