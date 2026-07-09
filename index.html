@@ -324,6 +324,12 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
   /* PARTICIPANTES POR ITEM */
   .item-emoji{font-size:20px;flex-shrink:0;width:26px;text-align:center}
+  .g-warn{margin-top:10px;font-size:12.5px;color:#a9651a;background:rgba(231,154,52,.12);
+    border:1px solid rgba(231,154,52,.4);border-radius:9px;padding:8px 11px;font-weight:600}
+  body.dark .g-warn{color:#f2c368;background:rgba(231,154,52,.15)}
+  .limpar-tudo{display:block;margin:14px auto 0;background:none;border:none;cursor:pointer;
+    color:var(--fumaca);font-family:'Inter',sans-serif;font-size:12px;text-decoration:underline;opacity:.7;transition:.15s}
+  .limpar-tudo:hover{color:#c0392b;opacity:1}
   .add-agenda{grid-column:1/-1;margin-top:8px;width:100%;padding:9px;border-radius:9px;border:1px dashed var(--ember2);
     background:rgba(251,109,81,.10);color:var(--ember1);font-family:'Oswald',sans-serif;font-size:11px;
     letter-spacing:.06em;text-transform:uppercase;font-weight:700;cursor:pointer;transition:.15s}
@@ -403,11 +409,12 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     font-size:14px;letter-spacing:.1em;text-transform:uppercase;transition:.15s}
   .share-all:hover{filter:brightness(1.08)}
   .resumo-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-  .resumo-actions .share-all{flex:1;margin-top:0;min-width:180px}
+  .resumo-actions .share-all{flex:1;margin-top:0;min-width:180px;background:#2f6fed;color:#fff}
+  .resumo-actions .share-all:hover{background:#2560d8}
   .copy-resumo{flex:1;min-width:130px;margin-top:0;padding:14px;border-radius:12px;cursor:pointer;
-    border:none;background:var(--ember);color:#fff;
+    border:1.5px solid #2f6fed;background:rgba(47,111,237,.10);color:#2f6fed;
     font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;transition:.15s}
-  .copy-resumo:hover{filter:brightness(1.06)}
+  .copy-resumo:hover{background:rgba(47,111,237,.18)}
   .copy-resumo:active{transform:scale(.97)}
   .copiar-grande{width:100%;margin-top:9px;padding:9px 12px;border-radius:8px;cursor:pointer;border:none;
     background:var(--recebe);color:#0d2417;font-family:'Oswald',sans-serif;font-weight:700;font-size:11px;
@@ -583,7 +590,10 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
   <div id="undoBar" class="undobar"><span id="undoTxt"></span><button id="undoBtn">Desfazer</button></div>
 
-  <footer>Racha do Rolê · dividir sem estresse</footer>
+  <footer>
+    Racha do Rolê · dividir sem estresse
+    <button id="btnLimparTudo" class="limpar-tudo">Limpar todos os dados deste aparelho</button>
+  </footer>
 </div>
 
 <!-- MODAL QR -->
@@ -944,15 +954,25 @@ function renderGastos(){
       <div class="parts-ctrl">
         <button class="parts-toggle">👥 <span>Quem participou:</span> <span class="parts-label">todos</span> <span class="parts-caret">▾</span></button>
         <div class="parts-list">${state.pessoas.map(pp=>`<button class="pchip" data-id="${pp.id}">${escapeHtml((pp.nome||'').trim()||'(sem nome)')}</button>`).join('')}</div>
-      </div>`;
+      </div>
+      <div class="g-warn" style="display:none"></div>`;
 
     el.querySelector('.pagador').value = g.pagador;
     const emojiEl = el.querySelector('.item-emoji');
-    el.querySelector('.desc').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); g.desc=e.target.value; emojiEl.textContent = emojiDoItem(g.desc); autosave(); });
+    const warnEl = el.querySelector('.g-warn');
+    function updateWarn(){
+      const nm = (g.desc||'').trim(), vl = parseMoney(g.valor);
+      let txt = '';
+      if(vl>0 && !nm) txt = '⚠️ Falta dar um nome pra essa compra';
+      else if(nm && !(vl>0)) txt = '⚠️ Falta preencher o valor dessa compra';
+      warnEl.textContent = txt; warnEl.style.display = txt ? 'block' : 'none';
+    }
+    el.querySelector('.desc').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); g.desc=e.target.value; emojiEl.textContent = emojiDoItem(g.desc); updateWarn(); autosave(); });
     el.querySelector('.pagador').addEventListener('change', e=>{ g.pagador=e.target.value; recalc(); autosave(); });
     const valEl = el.querySelector('.valor');
-    valEl.addEventListener('input', e=>{ g.valor=e.target.value; recalc(); autosave(); });
-    valEl.addEventListener('blur', e=>{ const n=parseMoney(e.target.value); if(n>0){ g.valor = n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); e.target.value = g.valor; recalc(); autosave(); } });
+    valEl.addEventListener('input', e=>{ g.valor=e.target.value; recalc(); updateWarn(); autosave(); });
+    valEl.addEventListener('blur', e=>{ const n=parseMoney(e.target.value); if(n>0){ g.valor = n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); e.target.value = g.valor; recalc(); autosave(); } updateWarn(); });
+    updateWarn();
     // participantes por item
     const partsList = el.querySelector('.parts-list');
     const partsLabel = el.querySelector('.parts-label');
@@ -1052,7 +1072,7 @@ function calcular(){
 }
 
 // renderiza um acerto completo — reaproveitado no Acerto e no Consolidado
-function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
+function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle, compras){
   const isConsol = ctxNome === 'Consolidado';
   let html = `
     <div class="total-card">
@@ -1146,9 +1166,9 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
   });
 
   const sa = box.querySelector('.share-all');
-  if(sa) sa.addEventListener('click', ()=>shareResumo(ctxNome, total, balances, pagamentos));
+  if(sa) sa.addEventListener('click', ()=>shareResumo(ctxNome, total, balances, pagamentos, compras));
   const cr = box.querySelector('.copy-resumo');
-  if(cr) cr.addEventListener('click', ()=> copyText(textoResumo(ctxNome, total, balances, pagamentos)));
+  if(cr) cr.addEventListener('click', ()=> copyText(textoResumo(ctxNome, total, balances, pagamentos, compras)));
 }
 
 function renderAcerto(){
@@ -1159,7 +1179,7 @@ function renderAcerto(){
     return;
   }
   const sub = `${state.pessoas.length} pessoas · ${fmt(total/state.pessoas.length)} por cabeça (média)`;
-  renderSettlement(box, total, balances, pagamentos, state.nome||'Rolê', sub);
+  renderSettlement(box, total, balances, pagamentos, state.nome||'Rolê', sub, state.gastos);
 }
 
 // envio robusto: celular usa compartilhamento nativo (iPhone/Android); PC abre o WhatsApp
@@ -1174,10 +1194,14 @@ function enviarWhatsApp(msg){
 function mensagemCobranca(deNome, ctxNome, valor, link){
   return `💸 Oi ${deNome}!\nDo rolê *${ctxNome}*, ficou ${fmt(valor)} pra você.\n\n👉 Toca no link, copia o PIX e cola no seu banco:\n${link}`;
 }
-function textoResumo(nome, total, balances, pagamentos){
+function textoResumo(nome, total, balances, pagamentos, compras){
   let msg = `🧾 *RESUMO — ${nome}*\n`;
-  msg += `💰 Total da conta: ${fmt(total)}\n\n`;
-  msg += `👥 *Como ficou pra cada um:*\n`;
+  msg += `💰 Total da conta: ${fmt(total)}\n`;
+  if(compras && compras.length){
+    msg += `\n🛒 *O que foi comprado:*\n`;
+    compras.forEach(g=>{ const v=parseMoney(g.valor); if(v>0) msg += `• ${emojiDoItem(g.desc)} ${(g.desc||'').trim()||'(sem nome)'}: ${fmt(v)}\n`; });
+  }
+  msg += `\n👥 *Como ficou pra cada um:*\n`;
   balances.forEach(b=>{
     let fim;
     if(b.saldo>0.005) fim = `recebe ${fmt(b.saldo)} ✅`;
@@ -1192,8 +1216,8 @@ function textoResumo(nome, total, balances, pagamentos){
   msg += `\nConfere aí se tá tudo certo! 🤝`;
   return msg;
 }
-function shareResumo(nome, total, balances, pagamentos){
-  enviarWhatsApp(textoResumo(nome, total, balances, pagamentos));
+function shareResumo(nome, total, balances, pagamentos, compras){
+  enviarWhatsApp(textoResumo(nome, total, balances, pagamentos, compras));
 }
 
 /* ---------- modal QR ---------- */
@@ -1394,9 +1418,11 @@ function updateConsolidaResult(){
   }
   const map = new Map();
   let total = 0;
+  const comprasConsol = [];
   items.forEach(it=>{
     const { rows, total:t } = computeShares(it.pessoas, it.gastos, it.simples);
     total += t;
+    (it.gastos||[]).forEach(g=>{ if(parseMoney(g.valor)>0) comprasConsol.push(g); });
     rows.forEach(r=>{
       const nm = (r.nome||'').trim();
       const key = (nm && nm!=='(sem nome)')
@@ -1418,7 +1444,7 @@ function updateConsolidaResult(){
   }));
   const pagamentos = settle(balances);
   const sub = `${items.length} rolê${items.length>1?'s':''} · ${balances.length} pessoas`;
-  renderSettlement(box, total, balances, pagamentos, 'Consolidado', sub);
+  renderSettlement(box, total, balances, pagamentos, 'Consolidado', sub, comprasConsol);
 
   // aviso: rolês com o mesmo nome podem estar somando em dobro
   const nomesSel = items.map(it=>(it.nome||'').trim().toLowerCase()).filter(Boolean);
@@ -1762,6 +1788,14 @@ document.getElementById('shareOverlay').addEventListener('click', e=>{ if(e.targ
 document.getElementById('addPessoa').addEventListener('click', ()=>{ const np=novaPessoa(); state.pessoas.push(np); newlyAdded=np.id; renderPessoas(); renderGastos(); recalc(); autosave(); });
 document.getElementById('addGasto').addEventListener('click', ()=>{ const ng=novoGasto(); state.gastos.push(ng); newlyAdded=ng.id; renderGastos(); recalc(); autosave(); });
 document.getElementById('nomeChurra').addEventListener('input', e=>{ const pos=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(pos,pos); state.nome = e.target.value; autosave(); });
+
+document.getElementById('btnLimparTudo').addEventListener('click', async ()=>{
+  const ok = await confirmar({ titulo:'Limpar tudo?', texto:'Isso apaga TODOS os rolês salvos, a agenda e o rolê atual deste aparelho. Não dá pra desfazer.', ok:'Apagar tudo', cancel:'Cancelar' });
+  if(!ok) return;
+  await store.del('racha:working'); await store.del('racha:saved'); await store.del('racha:contatos');
+  try{ ['racha:working','racha:saved','racha:contatos'].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  location.reload();
+});
 
 /* ---------- boot ---------- */
 (async function init(){
