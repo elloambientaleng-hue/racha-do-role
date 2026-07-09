@@ -666,6 +666,17 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   </div>
 </div>
 
+<div class="overlay" id="promptOverlay">
+  <div class="modal">
+    <h3 id="promptTitulo">Renomear</h3>
+    <input id="promptInput" class="up" style="margin:6px 0 16px" placeholder="Novo nome">
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="promptCancel">Cancelar</button>
+      <button class="confirm-ok" id="promptOk">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <datalist id="nomesHist"></datalist>
 
 <div class="overlay" id="temaOverlay">
@@ -1350,6 +1361,7 @@ function renderSaved(){
       <div class="info"><div class="sn">${escapeHtml(s.state.nome||'Rolê')}</div>
       <div class="sd">${data} · ${s.state.pessoas.length}p · ${s.state.gastos.length} itens</div></div>
       <button class="sbtn open">Abrir</button>
+      <button class="sbtn ren-saved">Renomear</button>
       <button class="sbtn x del-saved">Excluir</button>
     </div>`;
   }).join('');
@@ -1358,6 +1370,16 @@ function renderSaved(){
     const id = row.dataset.id;
     row.querySelector('.open').addEventListener('click', ()=>{
       if(savedCache[id]){ state = JSON.parse(JSON.stringify(savedCache[id].state)); syncAll(); toast('Rolê carregado! ✅'); }
+    });
+    row.querySelector('.ren-saved').addEventListener('click', async ()=>{
+      if(!savedCache[id]) return;
+      const novo = await pedirTexto({ titulo:'Renomear rolê', valor: savedCache[id].state.nome||'' });
+      if(novo===null) return;
+      const nomeF = novo.trim().toUpperCase() || 'ROLÊ';
+      savedCache[id].state.nome = nomeF;
+      await store.set('racha:saved', savedCache);
+      renderSaved(); renderConsolidaList(); updateConsolidaResult(); updateConsolHeader(); atualizarHistoricoNomes();
+      toast('Rolê renomeado ✅');
     });
     row.querySelector('.del-saved').addEventListener('click', async ()=>{
       delete savedCache[id]; selectedConsolida.delete(id);
@@ -1635,7 +1657,24 @@ function confirmar({titulo='Confirmar', texto='', ok='OK', cancel='Cancelar'}={}
     ov.classList.add('show');
   });
 }
-let newlyAdded = null;
+/* prompt de texto (renomear) */
+function pedirTexto({titulo='Renomear', valor='', ok='Salvar', cancel='Cancelar'}={}){
+  return new Promise(resolve=>{
+    const ov = document.getElementById('promptOverlay');
+    document.getElementById('promptTitulo').textContent = titulo;
+    const inp = document.getElementById('promptInput');
+    inp.value = valor;
+    const bOk = document.getElementById('promptOk'), bCancel = document.getElementById('promptCancel');
+    bOk.textContent = ok; bCancel.textContent = cancel;
+    function fechar(v){ ov.classList.remove('show'); bOk.onclick=null; bCancel.onclick=null; ov.onclick=null; inp.onkeydown=null; resolve(v); }
+    bOk.onclick = ()=>fechar(inp.value.trim());
+    bCancel.onclick = ()=>fechar(null);
+    ov.onclick = e=>{ if(e.target===ov) fechar(null); };
+    inp.onkeydown = e=>{ if(e.key==='Enter') fechar(inp.value.trim()); };
+    ov.classList.add('show');
+    setTimeout(()=>{ inp.focus(); inp.select(); }, 50);
+  });
+}
 function nameColor(name){
   const s=(name||'?').trim()||'?';
   let h=0; for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; }
