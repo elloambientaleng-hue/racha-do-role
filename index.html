@@ -1675,6 +1675,7 @@ function pedirTexto({titulo='Renomear', valor='', ok='Salvar', cancel='Cancelar'
     setTimeout(()=>{ inp.focus(); inp.select(); }, 50);
   });
 }
+let newlyAdded = null;
 function nameColor(name){
   const s=(name||'?').trim()||'?';
   let h=0; for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; }
