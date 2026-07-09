@@ -339,16 +339,13 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .g-r1{display:flex;align-items:center;gap:8px}
   .g-r1 .desc{flex:1;min-width:0}
   .parts-ctrl{margin-top:12px}
-  .parts-toggle{width:100%;background:rgba(124,92,255,.09);border:1.5px solid rgba(124,92,255,.4);border-radius:11px;
-    color:#6b4be0;font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;
+  .parts-toggle{width:100%;background:rgba(251,109,81,.10);border:1.5px solid var(--ember2);border-radius:11px;
+    color:var(--ember1);font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;
     cursor:pointer;padding:13px 14px;display:flex;align-items:center;gap:8px;transition:.15s}
-  body.dark .parts-toggle{color:#b9a6ff;background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.45)}
-  .parts-toggle:hover{background:rgba(124,92,255,.16)}
-  .parts-label{color:#6b4be0;font-weight:800;margin-left:auto}
-  body.dark .parts-label{color:#b9a6ff}
+  .parts-toggle:hover{background:rgba(251,109,81,.18)}
+  .parts-label{color:var(--ember1);font-weight:800;margin-left:auto}
   .parts-label.custom{color:var(--ember1)}
-  .parts-caret{color:#6b4be0}
-  body.dark .parts-caret{color:#b9a6ff}
+  .parts-caret{color:var(--ember1)}
   .parts-list{display:none;flex-wrap:wrap;gap:6px;margin-top:9px}
   .parts-list.show{display:flex}
   .pchip{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:6px 11px;border-radius:16px;
@@ -1306,7 +1303,7 @@ async function salvarRole(){
   savedCache[id] = { savedAt: Date.now(), state: JSON.parse(JSON.stringify(state)) };
   await store.set('racha:saved', savedCache);
   await aprenderContatos(state);
-  renderSaved(); renderConsolidaList(); updateConsolidaResult(); renderGaleraImport(); updateConsolHeader(); atualizarHistoricoNomes(); renderContatos(); updateContatosHeader();
+  renderSaved(); renderConsolidaList(); updateConsolidaResult(); renderGaleraImport(); updateConsolHeader(); atualizarHistoricoNomes(); renderContatos(); updateContatosHeader(); renderPessoas();
   toast(atualizou ? 'Rolê atualizado ✅' : 'Rolê salvo em Meus Rolês ✅');
 }
 document.getElementById('btnSalvarTop').addEventListener('click', salvarRole);
@@ -1837,7 +1834,7 @@ document.getElementById('btnLimparTudo').addEventListener('click', async ()=>{
     });
     if(Object.keys(contatos).length) await store.set('racha:contatos', contatos);
   }
-  renderContatos(); updateContatosHeader();
+  renderContatos(); updateContatosHeader(); renderPessoas();
   if(porLink){
     toast('Rolê aberto pelo link 🔗');
     history.replaceState(null, '', location.pathname + location.search);
