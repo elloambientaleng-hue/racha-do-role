@@ -405,13 +405,13 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .resumo-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
   .resumo-actions .share-all{flex:1;margin-top:0;min-width:180px}
   .copy-resumo{flex:1;min-width:130px;margin-top:0;padding:14px;border-radius:12px;cursor:pointer;
-    border:none;background:var(--recebe);color:#0d2417;
+    border:none;background:var(--ember);color:#fff;
     font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;transition:.15s}
-  .copy-resumo:hover{filter:brightness(1.08)}
+  .copy-resumo:hover{filter:brightness(1.06)}
   .copy-resumo:active{transform:scale(.97)}
-  .copiar-grande{width:100%;margin-top:10px;padding:16px;border-radius:12px;cursor:pointer;border:none;
-    background:var(--recebe);color:#0d2417;font-family:'Oswald',sans-serif;font-weight:700;font-size:14px;
-    letter-spacing:.06em;text-transform:uppercase;box-shadow:0 5px 16px rgba(31,157,106,.28);transition:.15s}
+  .copiar-grande{width:100%;margin-top:9px;padding:9px 12px;border-radius:8px;cursor:pointer;border:none;
+    background:var(--recebe);color:#0d2417;font-family:'Oswald',sans-serif;font-weight:700;font-size:11px;
+    letter-spacing:.1em;text-transform:uppercase;transition:.15s;min-height:38px}
   .copiar-grande:hover{filter:brightness(1.08)}
   .copiar-grande:active{transform:scale(.98)}
 
@@ -1166,7 +1166,10 @@ function renderAcerto(){
 const ehMobile = /android|iphone|ipad|ipod/i.test((navigator.userAgent||'').toLowerCase());
 function enviarWhatsApp(msg){
   if(ehMobile && navigator.share){ navigator.share({ text: msg }).catch(()=>{}); return; }
+  // No PC, o WhatsApp Web às vezes estraga emoji vindo pela URL — copiamos como garantia
+  try{ if(navigator.clipboard) navigator.clipboard.writeText(msg); }catch(e){}
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  toast('Abri o WhatsApp. Se os emojis saírem quadradinhos, é só colar (Ctrl+V) — já copiei o texto ✅');
 }
 function mensagemCobranca(deNome, ctxNome, valor, link){
   return `💸 Oi ${deNome}!\nDo rolê *${ctxNome}*, ficou ${fmt(valor)} pra você.\n\n👉 Toca no link, copia o PIX e cola no seu banco:\n${link}`;
