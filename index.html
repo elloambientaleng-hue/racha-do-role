@@ -329,14 +329,16 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .p-top input{flex:1}
   .grid3,.grid2{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;align-items:end}
   .grid3p{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:10px;align-items:end}
-  /* cores dos grupos (casais/turmas que pagam juntos) */
-  .pessoa[class*="grupo-"]{border-left:4px solid var(--linha)}
-  .pessoa.grupo-1{border-left-color:#7c5cff}
-  .pessoa.grupo-2{border-left-color:#2f6fed}
-  .pessoa.grupo-3{border-left-color:#12b886}
-  .pessoa.grupo-4{border-left-color:#ff8a00}
-  .pessoa.grupo-5{border-left-color:#ff3d81}
-  .pessoa.grupo-6{border-left-color:#0ea5a4}
+  /* cores dos grupos (casais/turmas que pagam juntos) — borda em todo o card e no seletor */
+  .pessoa[class*="grupo-"]{border-width:2px}
+  .pessoa.grupo-1{border-color:#ff2d55} .pessoa.grupo-1 .grupo{border-color:#ff2d55;color:#ff2d55;font-weight:700}
+  .pessoa.grupo-2{border-color:#2563eb} .pessoa.grupo-2 .grupo{border-color:#2563eb;color:#2563eb;font-weight:700}
+  .pessoa.grupo-3{border-color:#16a34a} .pessoa.grupo-3 .grupo{border-color:#16a34a;color:#16a34a;font-weight:700}
+  .pessoa.grupo-4{border-color:#f97316} .pessoa.grupo-4 .grupo{border-color:#f97316;color:#f97316;font-weight:700}
+  .pessoa.grupo-5{border-color:#9333ea} .pessoa.grupo-5 .grupo{border-color:#9333ea;color:#9333ea;font-weight:700}
+  .pessoa.grupo-6{border-color:#0891b2} .pessoa.grupo-6 .grupo{border-color:#0891b2;color:#0891b2;font-weight:700}
+  .grupo option[value="1"]{color:#ff2d55} .grupo option[value="2"]{color:#2563eb} .grupo option[value="3"]{color:#16a34a}
+  .grupo option[value="4"]{color:#f97316} .grupo option[value="5"]{color:#9333ea} .grupo option[value="6"]{color:#0891b2}
   .toggle{
     font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
     padding:10px 12px;border-radius:9px;border:1px solid var(--linha);background:var(--card);
