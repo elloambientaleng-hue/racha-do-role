@@ -1361,6 +1361,7 @@ function renderSaved(){
       <div class="info"><div class="sn">${escapeHtml(s.state.nome||'Rolê')}</div>
       <div class="sd">${data} · ${s.state.pessoas.length}p · ${s.state.gastos.length} itens</div></div>
       <button class="sbtn open">Abrir</button>
+      <button class="sbtn share-saved">Compartilhar</button>
       <button class="sbtn ren-saved">Renomear</button>
       <button class="sbtn x del-saved">Excluir</button>
     </div>`;
@@ -1370,6 +1371,9 @@ function renderSaved(){
     const id = row.dataset.id;
     row.querySelector('.open').addEventListener('click', ()=>{
       if(savedCache[id]){ state = JSON.parse(JSON.stringify(savedCache[id].state)); syncAll(); toast('Rolê carregado! ✅'); }
+    });
+    row.querySelector('.share-saved').addEventListener('click', ()=>{
+      if(savedCache[id]) abrirCompartilhar(savedCache[id].state);
     });
     row.querySelector('.ren-saved').addEventListener('click', async ()=>{
       if(!savedCache[id]) return;
@@ -1877,7 +1881,8 @@ function deserialize(str){
   });
   return { nome:o.n||'Rolê compartilhado', pessoas, gastos, simples:o.s?true:false };
 }
-function linkDoRole(){ return location.origin + location.pathname + '#r=' + serialize(state); }
+function linkDeEstado(st){ return location.origin + location.pathname + '#r=' + serialize(st); }
+function linkDoRole(){ return linkDeEstado(state); }
 function linkPagamento(pg, payload){
   const o = { c:payload, v:fmt(pg.valor), p:pg.paraNome };
   return location.origin + location.pathname + '#pagar=' + b64urlEnc(JSON.stringify(o));
@@ -1900,15 +1905,17 @@ function abrirViewPagamento(str){
   document.getElementById('pagarView').classList.add('show');
   return true;
 }
-function mensagemZap(link){ return `Racha do Rolê - ${state.nome}\n\nBora fechar a conta! Toca no link que já abre com tudo preenchido:\n\n${link}`; }
+function mensagemZap(link, nome){ return `Racha do Rolê - ${nome||'Rolê'}\n\nBora fechar a conta! Toca no link que já abre com tudo preenchido:\n\n${link}`; }
 
-document.getElementById('btnShare').addEventListener('click', ()=>{
-  const link = linkDoRole();
+let shareNome = '';
+function abrirCompartilhar(st){
+  shareNome = st.nome || 'Rolê';
   const inp = document.getElementById('shareLink');
-  inp.value = link;
+  inp.value = linkDeEstado(st);
   document.getElementById('shareOverlay').classList.add('show');
   setTimeout(()=>{ inp.focus(); inp.select(); }, 50);
-});
+}
+document.getElementById('btnShare').addEventListener('click', ()=> abrirCompartilhar(state));
 document.getElementById('shareCopy').addEventListener('click', ()=>{
   const link = document.getElementById('shareLink').value;
   const inp = document.getElementById('shareLink'); inp.focus(); inp.select();
@@ -1916,7 +1923,7 @@ document.getElementById('shareCopy').addEventListener('click', ()=>{
 });
 document.getElementById('shareWpp').addEventListener('click', ()=>{
   const link = document.getElementById('shareLink').value;
-  window.open('https://wa.me/?text='+encodeURIComponent(mensagemZap(link)), '_blank');
+  window.open('https://wa.me/?text='+encodeURIComponent(mensagemZap(link, shareNome)), '_blank');
 });
 document.getElementById('shareClose').addEventListener('click', ()=>document.getElementById('shareOverlay').classList.remove('show'));
 document.getElementById('shareOverlay').addEventListener('click', e=>{ if(e.target.id==='shareOverlay') e.currentTarget.classList.remove('show'); });
