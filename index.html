@@ -405,10 +405,15 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .resumo-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
   .resumo-actions .share-all{flex:1;margin-top:0;min-width:180px}
   .copy-resumo{flex:1;min-width:130px;margin-top:0;padding:14px;border-radius:12px;cursor:pointer;
-    border:1px solid var(--linha);background:var(--card);color:var(--creme);
+    border:none;background:var(--recebe);color:#0d2417;
     font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;transition:.15s}
-  .copy-resumo:hover{border-color:var(--ember2);color:var(--ember1)}
+  .copy-resumo:hover{filter:brightness(1.08)}
   .copy-resumo:active{transform:scale(.97)}
+  .copiar-grande{width:100%;margin-top:10px;padding:16px;border-radius:12px;cursor:pointer;border:none;
+    background:var(--recebe);color:#0d2417;font-family:'Oswald',sans-serif;font-weight:700;font-size:14px;
+    letter-spacing:.06em;text-transform:uppercase;box-shadow:0 5px 16px rgba(31,157,106,.28);transition:.15s}
+  .copiar-grande:hover{filter:brightness(1.08)}
+  .copiar-grande:active{transform:scale(.98)}
 
   /* SAVE */
   .save-row{display:grid;grid-template-columns:1fr auto;gap:8px}
@@ -1090,10 +1095,7 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
           <span class="val">${fmt(pg.valor)}</span>
         </div>`;
       if(temPix){
-        html += `<div class="pay-actions">
-            <button class="btn show-qr">▦ QR Code</button>
-            <button class="btn copy-msg">💬 Copiar cobrança</button>
-          </div>`;
+        html += `<button class="copiar-grande copy-msg">💬 Copiar cobrança pra mandar no zap</button>`;
       }else{
         html += `<div class="no-pix">Adicione a chave PIX de ${escapeHtml(pg.paraNome)} pra gerar o pagamento.</div>`;
       }
@@ -1137,10 +1139,8 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle){
     if(del) del.addEventListener('click', ()=>{ delete state.comprovantes[pagoKey(pg)]; autosave(); renderAcerto(); toast('Comprovante removido'); });
     if(!pg.paraPix || !pg.paraPix.trim()) return;
     const payload = buildPix(pg.paraPix, pg.valor, pg.paraNome);
-    const qr = payEl.querySelector('.show-qr');
-    if(qr) qr.addEventListener('click', ()=>openQR(pg, payload));
     const linkPg = linkPagamento(pg, payload);
-    const msgCobranca = `Oi ${pg.deNome}!\nDo rolê "${ctxNome}", ficou ${fmt(pg.valor)} pra você.\n\nToca no link, copia o PIX e cola no seu banco:\n${linkPg}`;
+    const msgCobranca = mensagemCobranca(pg.deNome, ctxNome, pg.valor, linkPg);
     const cm = payEl.querySelector('.copy-msg');
     if(cm) cm.addEventListener('click', ()=> copyText(msgCobranca));
   });
@@ -1162,23 +1162,35 @@ function renderAcerto(){
   renderSettlement(box, total, balances, pagamentos, state.nome||'Rolê', sub);
 }
 
+// envio robusto: celular usa compartilhamento nativo (iPhone/Android); PC abre o WhatsApp
+const ehMobile = /android|iphone|ipad|ipod/i.test((navigator.userAgent||'').toLowerCase());
+function enviarWhatsApp(msg){
+  if(ehMobile && navigator.share){ navigator.share({ text: msg }).catch(()=>{}); return; }
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+function mensagemCobranca(deNome, ctxNome, valor, link){
+  return `💸 Oi ${deNome}!\nDo rolê *${ctxNome}*, ficou ${fmt(valor)} pra você.\n\n👉 Toca no link, copia o PIX e cola no seu banco:\n${link}`;
+}
 function textoResumo(nome, total, balances, pagamentos){
-  let msg = `RESUMO - ${nome}\n\nTotal da conta: ${fmt(total)}\n\nCONFERENCIA (o que cada um deve):\n`;
+  let msg = `🧾 *RESUMO — ${nome}*\n`;
+  msg += `💰 Total da conta: ${fmt(total)}\n\n`;
+  msg += `👥 *Como ficou pra cada um:*\n`;
   balances.forEach(b=>{
-    const saldo = b.saldo>0.005 ? `tem a receber ${fmt(b.saldo)}` : (b.saldo<-0.005 ? `deve pagar ${fmt(-b.saldo)}` : 'quitado');
-    msg += `${b.nome}: gastou ${fmt(b.paid)}, parte dele(a) ${fmt(b.fair)} -> ${saldo}\n`;
+    let fim;
+    if(b.saldo>0.005) fim = `recebe ${fmt(b.saldo)} ✅`;
+    else if(b.saldo<-0.005) fim = `paga ${fmt(-b.saldo)}`;
+    else fim = `quitado`;
+    msg += `• ${b.nome}: gastou ${fmt(b.paid)} · parte ${fmt(b.fair)} · ${fim}\n`;
   });
   if(pagamentos && pagamentos.length){
-    msg += `\nACERTO FINAL (quem paga quem):\n`;
-    pagamentos.forEach(pg=>{ msg += `- ${pg.deNome} paga ${fmt(pg.valor)} pra ${pg.paraNome}\n`; });
+    msg += `\n💸 *Acerto (quem paga quem):*\n`;
+    pagamentos.forEach(pg=>{ msg += `• ${pg.deNome} → ${pg.paraNome}: ${fmt(pg.valor)}\n`; });
   }
-  msg += `\nConfere ai se ta tudo certo!`;
+  msg += `\nConfere aí se tá tudo certo! 🤝`;
   return msg;
 }
 function shareResumo(nome, total, balances, pagamentos){
-  const msg = textoResumo(nome, total, balances, pagamentos);
-  if(navigator.share){ navigator.share({ text: msg }).catch(()=>{}); return; }
-  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+  enviarWhatsApp(textoResumo(nome, total, balances, pagamentos));
 }
 
 /* ---------- modal QR ---------- */
@@ -1330,9 +1342,12 @@ document.getElementById('importFile').addEventListener('change', e=>{
 
 // rolês disponíveis pra consolidar: o atual (em edição) + os salvos
 function consolidaItems(){
+  const nomeAtual = (state.nome||'Rolê atual').trim().toLowerCase();
   const items = [{ id:'__current', cur:true, nome:(state.nome||'Rolê atual'), pessoas:state.pessoas, gastos:state.gastos, simples:state.simples }];
   Object.keys(savedCache).sort((a,b)=> savedCache[b].savedAt - savedCache[a].savedAt).forEach(id=>{
     const s = savedCache[id];
+    // não repete: se o salvo tem o mesmo nome do rolê em edição, ele já está representado pelo "Este rolê"
+    if((s.state.nome||'').trim().toLowerCase() === nomeAtual) return;
     items.push({ id, cur:false, nome:s.state.nome||'Rolê', pessoas:s.state.pessoas, gastos:s.state.gastos, simples:s.state.simples });
   });
   return items;
