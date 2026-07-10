@@ -251,14 +251,6 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   }
   body.tema-noite section{box-shadow:none;border:1px solid var(--linha)}
   body.tema-noite .theme-toggle{box-shadow:none}
-  .tema-list{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
-  .tema-opt{display:flex;align-items:center;gap:12px;width:100%;padding:11px 13px;border-radius:11px;
-    border:1.5px solid var(--linha);background:var(--card2);cursor:pointer;transition:.15s;
-    font-family:'Oswald',sans-serif;font-weight:600;font-size:14px;color:var(--creme);text-transform:uppercase;letter-spacing:.03em}
-  .tema-opt:hover{border-color:var(--ember2)}
-  .tema-opt.on{border-color:var(--ember1);background:var(--accent-soft,rgba(224,83,58,.10))}
-  .tema-sw{width:30px;height:30px;border-radius:8px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
-  .tema-sub{margin-left:auto;font-size:10px;color:var(--fumaca);font-weight:500;letter-spacing:.06em}
   body.tema-noite input,body.tema-noite select{background:#2b3038}
   body.tema-noite .nome-churra{background:none}
   body.tema-noite input::placeholder{color:#7a8494}
@@ -373,6 +365,10 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .cat.on[data-c="outros"]{background:rgba(140,129,117,.14);border-color:#c1b6a6;color:#6b6155}
 
   /* PARTICIPANTES POR ITEM */
+  .dica-i{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;
+    background:var(--ember1);color:#fff;font-size:10px;font-weight:800;cursor:pointer;vertical-align:middle;
+    margin-left:3px;font-family:'Inter',sans-serif}
+  .dica-i:active{transform:scale(.9)}
   .item-emoji{font-size:20px;flex-shrink:0;width:26px;text-align:center}
   .g-warn{margin-top:10px;font-size:13px;color:#6b4a00;background:#ffdc3c;
     border:1.5px solid #e6a700;border-radius:9px;padding:9px 12px;font-weight:800}
@@ -708,21 +704,6 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   </div>
 </div>
 
-<div class="overlay" id="temaOverlay">
-  <div class="modal">
-    <h3>Escolher tema</h3>
-    <div class="mwho" style="margin-bottom:14px">Muda as cores do app todo. Escolhe o que curtir:</div>
-    <div class="tema-list">
-      <button class="tema-opt" data-tema="coral"><span class="tema-sw" style="background:linear-gradient(135deg,#e0533a,#fb6d51)"></span><span>Grafite & Coral</span><span class="tema-sub">aconchegante</span></button>
-      <button class="tema-opt" data-tema="azul"><span class="tema-sw" style="background:linear-gradient(135deg,#2f6fed,#0ea5a4)"></span><span>Fintech Azul</span><span class="tema-sub">confiável</span></button>
-      <button class="tema-opt" data-tema="tropical"><span class="tema-sw" style="background:linear-gradient(135deg,#ff3d81,#ff8a00)"></span><span>Verão Tropical</span><span class="tema-sub">vibrante</span></button>
-      <button class="tema-opt" data-tema="menta"><span class="tema-sw" style="background:linear-gradient(135deg,#059669,#0d9488)"></span><span>Menta & Grafite</span><span class="tema-sub">fresh</span></button>
-      <button class="tema-opt" data-tema="noite"><span class="tema-sw" style="background:linear-gradient(135deg,#20242c,#ff7a5c)"></span><span>Noite</span><span class="tema-sub">escuro</span></button>
-    </div>
-    <button class="close-x" id="temaClose">Fechar</button>
-  </div>
-</div>
-
 <input type="file" id="compFile" accept="image/*,application/pdf" style="display:none">
 
 <div class="overlay" id="compOverlay">
@@ -799,10 +780,10 @@ function parseMoney(v){
   const n = parseFloat(v);
   return isNaN(n)?0:n;
 }
-function toast(msg){
+function toast(msg, ms){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 1900);
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), ms||1900);
 }
 async function copyText(txt){
   try{ await navigator.clipboard.writeText(txt); toast('Copiado! 📋'); }
@@ -894,7 +875,7 @@ function renderPessoas(){
       </div>
       <div class="grid3p">
         <div>
-          <label class="mini">Consumo</label>
+          <label class="mini">Consumo <span class="dica-i" data-tip="Consumo: quanto a pessoa consome. ½ = come/bebe pouco (ex: criança) · 1 = normal · 2 = consome bastante. A conta divide proporcional a isso.">?</span></label>
           <select class="peso">
             <option value="0.5">½ parte</option>
             <option value="1">1 parte</option>
@@ -903,7 +884,7 @@ function renderPessoas(){
           </select>
         </div>
         <div>
-          <label class="mini">Fecha junto</label>
+          <label class="mini">Fecha junto <span class="dica-i" data-tip="Fecha junto: pessoas no mesmo grupo (ex: um casal) pagam juntas no fim, com um PIX só — mesmo consumindo coisas diferentes.">?</span></label>
           <select class="grupo">
             <option value="">Sozinho</option>
             <option value="1">Grupo 1</option>
@@ -985,12 +966,14 @@ function emojiDoItem(desc){
   const s = (desc||'').toLowerCase();
   if(!s.trim()) return '🛒';
   const tem = (...ks)=> ks.some(k=> s.includes(k));
+  // fogos de artifício (antes do fogo de churrasco)
+  if(tem('fogos','rojão','rojao','fogo de artif','sparkler','pistolinha','fogos de artif')) return '🎆';
   // churrasco / fogo
   if(tem('carvão','carvao','acendedor','álcool','alcool','fogo','isqueiro','fósforo','fosforo')) return '🔥';
   // carnes vermelhas
   if(tem('carne','picanha','costela','fraldinha','maminha','alcatra','contra','contrafilé','contrafile','cupim','panceta','bife','boi','porco','pernil','bacon','espeto','churrasc','lombo','linguiça','linguica','lingui')) return '🥩';
   // frango
-  if(tem('frango','coxa','sobrecoxa','asa','asinha','tulipa','galeto')) return '🍗';
+  if(tem('frango','coxa','sobrecoxa','asinha','tulipa','galeto','asa de frango','asa de galinha')) return '🍗';
   // peixe / camarão
   if(tem('peixe','salmão','salmao','tilápia','tilapia','camarão','camarao','sardinha','fritura de peixe')) return '🐟';
   // cerveja
@@ -1007,6 +990,36 @@ function emojiDoItem(desc){
   if(tem('refri','refrigerante','coca','pepsi','guaran','fanta','sprite','suco','néctar','nectar','soda','tônica','tonica','energético','energetico','red bull','monster','isotôn','gatorade')) return '🥤';
   // gelo
   if(tem('gelo')) return '🧊';
+  // ---- festa junina ----
+  if(tem('pipoca')) return '🍿';
+  if(tem('milho','pamonha','curau','canjica','espiga','mungunzá','mungunza')) return '🌽';
+  if(tem('amendoim','pé de moleque','pe de moleque','pé-de-moleque')) return '🥜';
+  if(tem('maçã do amor','maca do amor','maça do amor')) return '🍎';
+  if(tem('algodão doce','algodao doce')) return '🍭';
+  if(tem('quentão','quentao','vinho quente')) return '🍷';
+  if(tem('pinhão','pinhao')) return '🌰';
+  if(tem('caldo','caldinho','canja','sopa')) return '🍲';
+  // ---- aniversário / festa ----
+  if(tem('bolo','aniversário','aniversario','parabéns','parabens')) return '🎂';
+  if(tem('cupcake','muffin')) return '🧁';
+  if(tem('balão','balao','balões','baloes','bexiga','enfeite','decoração','decoracao','bandeirinha','painel','festa','confete','pisca-pisca','pisca pisca')) return '🎈';
+  if(tem('bala','pirulito','docinho','jujuba','goma de mascar','marshmallow','pé de moça','pe de moca','chiclete')) return '🍬';
+  if(tem('presente','lembrancinha','lembrança','lembranca','velinha','vela de aniver')) return '🎁';
+  // ---- salgados de festa ----
+  if(tem('coxinha','salgado','salgadinho','kibe','quibe','empada','empadinha','risole','rissole','enroladinho','pastel','bolinha de queijo','croquete','folheado','mini pizza','joelho')) return '🥟';
+  // ---- batata frita ----
+  if(tem('batata frita','batata-frita','fritas','batata palha','onion rings')) return '🍟';
+  // ---- cachorro-quente ----
+  if(tem('cachorro quente','cachorro-quente','hot dog','hotdog','dogão','dogao')) return '🌭';
+  // ---- massas ----
+  if(tem('macarrão','macarrao','lasanha','espaguete','espaguete','nhoque','talharim','penne','miojo','ravioli','canelone')) return '🍝';
+  // ---- comida japonesa ----
+  if(tem('sushi','temaki','sashimi','yakisoba','comida japonesa','japonesa','japones','rodízio japon','rodizio japon')) return '🍣';
+  // ---- mexicana ----
+  if(tem('taco','burrito','nachos','guacamole','mexicana','tortilla')) return '🌮';
+  // ---- fogos / som / estrutura ----
+  if(tem('caixa de som','aluguel de som','karaokê','karaoke','microfone','banda','ao vivo')) return '🎵';
+  if(tem('aluguel','tenda','toldo','freezer','gerador','mesa e cadeira','cadeiras','tapete')) return '🎪';
   // pizza
   if(tem('pizza','esfiha','esfirra')) return '🍕';
   // lanche / hamburguer
@@ -1227,6 +1240,7 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle, c
   });
 
   if(pagamentos.length){
+    html += `<button class="resumo-grande copy-resumo">📋 Copiar resumo pra galera</button>`;
     const podeMarcar = !isConsol;
     const pagosCount = podeMarcar ? pagamentos.filter(pg=>state.pagos && state.pagos[pagoKey(pg)]).length : 0;
     html += `<div class="divider"><span>Transferências</span></div>`;
@@ -1262,7 +1276,6 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle, c
       }
       html += `</div>`;
     });
-    html += `<button class="resumo-grande copy-resumo">📋 Copiar resumo pra galera</button>`;
   } else {
     html += `<div class="empty" style="margin-top:10px">Tá tudo certo — ninguém deve nada a ninguém. 🎉</div>`;
   }
@@ -1273,11 +1286,16 @@ function renderSettlement(box, total, balances, pagamentos, ctxNome, subtitle, c
     const pg = pagamentos[+payEl.dataset.idx];
     const chk = payEl.querySelector('.chkpay');
     if(chk){
-      chk.addEventListener('click', ()=>{
+      chk.addEventListener('click', async ()=>{
         if(!state.pagos) state.pagos = {};
         const k = pagoKey(pg);
+        const jaPago = !!state.pagos[k];
+        const ok = await confirmar(jaPago
+          ? { titulo:'Desmarcar pagamento?', texto:`Marcar que ${pg.deNome} ainda NÃO acertou com ${pg.paraNome}?`, ok:'Desmarcar', cancel:'Cancelar' }
+          : { titulo:'Confirmar pagamento?', texto:`${pg.deNome} já pagou ${fmt(pg.valor)} pra ${pg.paraNome}?`, ok:'Sim, pagou ✅', cancel:'Cancelar' });
+        if(!ok) return;
         const antesTodos = pagamentos.length>0 && pagamentos.every(p=>state.pagos[pagoKey(p)]);
-        if(state.pagos[k]) delete state.pagos[k]; else state.pagos[k] = true;
+        if(jaPago) delete state.pagos[k]; else state.pagos[k] = true;
         const agoraTodos = pagamentos.length>0 && pagamentos.every(p=>state.pagos[pagoKey(p)]);
         autosave(); renderAcerto();
         if(agoraTodos && !antesTodos){ confetti(); toast('Tudo acertado! 🎉'); }
@@ -1314,13 +1332,6 @@ function renderAcerto(){
 
 // envio robusto: celular usa compartilhamento nativo (iPhone/Android); PC abre o WhatsApp
 const ehMobile = /android|iphone|ipad|ipod/i.test((navigator.userAgent||'').toLowerCase());
-function enviarWhatsApp(msg){
-  if(ehMobile && navigator.share){ navigator.share({ text: msg }).catch(()=>{}); return; }
-  // No PC, o WhatsApp Web às vezes estraga emoji vindo pela URL — copiamos como garantia
-  try{ if(navigator.clipboard) navigator.clipboard.writeText(msg); }catch(e){}
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-  toast('Abri o WhatsApp. Se os emojis saírem quadradinhos, é só colar (Ctrl+V) — já copiei o texto ✅');
-}
 function mensagemCobranca(deNome, ctxNome, valor, link){
   return `💸 Oi ${deNome}!\nDo rolê *${ctxNome}*, ficou *${fmt(valor)}* pra você.\n\n👉 Toca no link, copia o PIX e cola no seu banco:\n${link}`;
 }
@@ -1344,9 +1355,6 @@ function textoResumo(nome, total, balances, pagamentos, compras){
   }
   msg += `\nConfere aí se tá tudo certo! 🎉`;
   return msg;
-}
-function shareResumo(nome, total, balances, pagamentos, compras){
-  enviarWhatsApp(textoResumo(nome, total, balances, pagamentos, compras));
 }
 
 /* ---------- modal QR ---------- */
@@ -1912,7 +1920,6 @@ function deserialize(str){
   return { nome:o.n||'Rolê compartilhado', pessoas, gastos, simples:o.s?true:false };
 }
 function linkDeEstado(st){ return location.origin + location.pathname + '#r=' + serialize(st); }
-function linkDoRole(){ return linkDeEstado(state); }
 function linkPagamento(pg, payload){
   const o = { c:payload, v:fmt(pg.valor), p:pg.paraNome };
   return location.origin + location.pathname + '#pagar=' + b64urlEnc(JSON.stringify(o));
@@ -1969,6 +1976,11 @@ document.getElementById('btnLimparTudo').addEventListener('click', async ()=>{
   try{ ['racha:working','racha:saved','racha:contatos'].forEach(k=>localStorage.removeItem(k)); }catch(e){}
   location.reload();
 });
+
+document.addEventListener('click', e=>{
+  const d = e.target.closest('.dica-i');
+  if(d){ e.preventDefault(); e.stopPropagation(); toast(d.dataset.tip || '', 5200); }
+}, true);
 
 /* ---------- boot ---------- */
 (async function init(){
