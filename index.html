@@ -101,14 +101,15 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .empty .ic{display:block;font-size:30px;margin-bottom:8px;opacity:.9}
 
   /* TOOLBAR / AÇÕES */
-  .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 6px}
-  .tb{font-family:'Oswald',sans-serif;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
-    padding:11px 14px;border-radius:22px;border:1px solid var(--linha);background:var(--card);
-    color:var(--creme);cursor:pointer;transition:.15s;text-align:center}
+  .toolbar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 6px}
+  .tb{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:.02em;text-transform:uppercase;
+    padding:9px 5px;border-radius:14px;border:1px solid var(--linha);background:var(--card);
+    color:var(--creme);cursor:pointer;transition:.15s;text-align:center;line-height:1.2;
+    display:flex;align-items:center;justify-content:center;min-height:44px}
   .tb:hover{border-color:var(--ember2)}
   .tb:active{transform:scale(.97)}
   .tb.on{background:rgba(251,109,81,.12);border-color:var(--ember2);color:var(--ember1)}
-  #btnAgenda{grid-column:1/-1}
+  #btnAgenda{grid-column:1/-1;min-height:0;padding:10px}
   .salvar-fim{display:block;width:100%;margin:18px 0 0;padding:16px;border-radius:14px;border:none;cursor:pointer;
     background:var(--ember);color:#fff;font-family:'Oswald',sans-serif;font-weight:700;font-size:15px;
     letter-spacing:.1em;text-transform:uppercase;box-shadow:0 6px 18px rgba(224,83,58,.28);transition:.15s}
@@ -565,7 +566,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   <div class="toolbar">
     <button class="tb tb-save" id="btnSalvarTop">💾 Salvar rolê</button>
     <button class="tb" id="btnSimples">⚖️ Modo simples</button>
-    <button class="tb" id="btnShare">🔗 Compartilhar link</button>
+    <button class="tb" id="btnShare">🔗 Compartilhar</button>
     <button class="tb" id="btnNovo">✨ Novo rolê</button>
     <button class="tb" id="btnAgenda">👥 Agenda</button>
   </div>
